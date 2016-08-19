@@ -16,8 +16,8 @@ public class EndlessTerrain : MonoBehaviour
     public Material mapMaterial;
 
     public static Vector2 viewerPosition;
-    private Vector2 viewerPositionOld;
-    private static MapGenerator mapGenerator;
+    Vector2 viewerPositionOld;
+    static MapGenerator mapGenerator;
     int chunkSize;
     int chunksVisibleInViewDst;
 
@@ -45,8 +45,6 @@ public class EndlessTerrain : MonoBehaviour
             viewerPositionOld = viewerPosition;
             UpdateVisibleChunks();
         }
-
-        UpdateVisibleChunks();
     }
 
     void UpdateVisibleChunks()
@@ -66,7 +64,7 @@ public class EndlessTerrain : MonoBehaviour
             {
                 Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
 
-                if (terrainChunkDictionary.ContainsKey((viewedChunkCoord)))
+                if (terrainChunkDictionary.ContainsKey(viewedChunkCoord))
                 {
                     terrainChunkDictionary[viewedChunkCoord].UpdateTerrainChunk();
                 }
@@ -95,7 +93,7 @@ public class EndlessTerrain : MonoBehaviour
 
         MapData mapData;
         bool mapDataReceived;
-        private int previousLODIndex = -1;
+        int previousLODIndex = -1;
 
         public TerrainChunk(Vector2 coord, int size, LODInfo[] detailLevel, Transform parent, Material material)
         {
@@ -200,7 +198,7 @@ public class EndlessTerrain : MonoBehaviour
         public bool hasRequestedMesh;
         public bool hasMesh;
         int lod;
-        private System.Action updateCallback;
+        System.Action updateCallback;
 
         public LODMesh(int lod, System.Action updateCallback)
         {

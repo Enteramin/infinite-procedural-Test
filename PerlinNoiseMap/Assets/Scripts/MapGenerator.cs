@@ -172,7 +172,7 @@ public class MapGenerator : MonoBehaviour
         public readonly Action<T> callback;
         public readonly T parameter;
 
-        public MapThreadInfo(Action<T> callback, T parameter) : this()
+        public MapThreadInfo(Action<T> callback, T parameter) 
         {
             this.callback = callback;
             this.parameter = parameter;
@@ -194,7 +194,7 @@ public struct MapData
     public readonly float[,] heightMap;
     public readonly Color[] colourMap;
 
-    public MapData(float[,] heightMap, Color[] colourMap) : this()
+    public MapData(float[,] heightMap, Color[] colourMap)
     {
         this.heightMap = heightMap;
         this.colourMap = colourMap;

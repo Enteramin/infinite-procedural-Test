@@ -77,8 +77,8 @@ public class MeshData
      int[] triangles;
      Vector2[] uvs;
 
-    private Vector3[] borderVertices;
-    private int[] borderTriangles;
+     Vector3[] borderVertices;
+     int[] borderTriangles;
 
 
     int triangleIndex;
@@ -112,9 +112,9 @@ public class MeshData
     {
         if (a < 0 || b < 0 || c < 0)
         {
-            borderTriangles[triangleIndex] = a;
-            borderTriangles[triangleIndex + 1] = b;
-            borderTriangles[triangleIndex + 2] = c;
+            borderTriangles[borderTriangleIndex] = a;
+            borderTriangles[borderTriangleIndex + 1] = b;
+            borderTriangles[borderTriangleIndex + 2] = c;
             borderTriangleIndex += 3;
         }
         else { 
@@ -142,7 +142,7 @@ public class MeshData
             vertexNormals[vertexIndexC] += triangleNormal;
         }
         int bordertriangleCount = borderTriangles.Length / 3;
-        for (int i = 0; i < triangleCount; i++)
+        for (int i = 0; i < bordertriangleCount; i++)
         {
             int normalTriangleInedex = i * 3;
             int vertexIndexA = borderTriangles[normalTriangleInedex];

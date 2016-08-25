@@ -11,15 +11,15 @@ public class MapGenerator : MonoBehaviour
 
     public Noise.NormalizeMode normalizeMode;
 
-    public const int mapChunkSize = 239;
-    [Range(0,6)]
-    public int editorPreviewLOD;
+    public const int mapChunkSize = 239; // less than 255^2: w-1 = 240: 240 has properties of 2,4,6,8,10,12: -2 because of border vertices
+    [Range(0,6)] // makes it to slider
+    public int editorPreviewLOD; //lod only for editor
     public float noiseScale;
 
     public int octaves;
     [Range(0,1)]
-    public float persistance;
-    public float lacunarity;
+    public float persistance; // decreas in amplitude of octaves. how small these features the whole map changes
+    public float lacunarity; // frequencys of octaves. increases number of small features
 
     public int seed;
     public Vector2 offset;
@@ -33,11 +33,12 @@ public class MapGenerator : MonoBehaviour
 
     public TerrainType[] regions;
 
-    private float[,] falloffMap;
+    private float[,] falloffMap; // stores the falloffMap
 
     Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
     Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
 
+    //use FallowMap
     void Awake()
     {
         falloffMap = FallofGenerator.GenerateFollOffMap(mapChunkSize);
@@ -46,7 +47,7 @@ public class MapGenerator : MonoBehaviour
     public void DrawMapIneditor()
     {
         MapData mapData = GenerateMapData(Vector2.zero);
-        MapDisplay display = FindObjectOfType<MapDisplay>();
+        MapDisplay display = FindObjectOfType<MapDisplay>(); //reference to mapdisplay, gives different options
         if (drawMode == DrawMode.NoiseMap)
         {
             display.DrawTexture(TextureGenerator.TextureFromHeightMap(mapData.heightMap));
@@ -66,19 +67,21 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+    //Threadening
     public void RequestMapData(Vector2 centre, Action<MapData> callback)
     {
          ThreadStart threadStart = delegate
         {
-            MapDataThread(centre, callback);
+            MapDataThread(centre, callback); //centre so its not always the same chunk
         };
         new Thread(threadStart).Start();
     }
 
+    //Threadening
     void MapDataThread(Vector2 centre, Action<MapData> callback)
     {
         MapData mapData = GenerateMapData(centre);
-        lock (mapDataThreadInfoQueue)
+        lock (mapDataThreadInfoQueue) //lock: so no other thread cann access this thread
         {
            mapDataThreadInfoQueue.Enqueue(new MapThreadInfo<MapData>(callback, mapData));
         }
@@ -86,7 +89,7 @@ public class MapGenerator : MonoBehaviour
 
     public void RequestMeshData(MapData mapData, int lod, Action<MeshData> callback)
     {
-        ThreadStart threadStart = delegate {
+        ThreadStart threadStart = delegate { // Meshdata Thread
             MeshDataThread(mapData, lod, callback);
         };
         new Thread(threadStart).Start();
@@ -94,6 +97,7 @@ public class MapGenerator : MonoBehaviour
 
     void MeshDataThread(MapData mapData, int lod, Action<MeshData> callback)
     {
+        //Gets the Height Map from GeneratteTerrainmesh
         MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod);
         lock (meshDataThreadInfoQueue)
         {
@@ -103,11 +107,11 @@ public class MapGenerator : MonoBehaviour
 
     void Update()
     {
-        if (mapDataThreadInfoQueue.Count > 0)
+        if (mapDataThreadInfoQueue.Count > 0) // as long there are threads
         {
             for (int i = 0; i < mapDataThreadInfoQueue.Count; i++)
             {
-                MapThreadInfo<MapData> threadInfo = mapDataThreadInfoQueue.Dequeue();
+                MapThreadInfo<MapData> threadInfo = mapDataThreadInfoQueue.Dequeue(); //Dequeue: the next thing in the queue
                 threadInfo.callback(threadInfo.parameter);
             }
         }
@@ -122,15 +126,20 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+    
     MapData GenerateMapData(Vector2 centre)
     {
+        //fetching 2D NoiseMap from the Noise Class
+        // +2 for the border vertices. generates 1 extra noise value on left and right side
         float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, normalizeMode);
 
+        //generate 1D Colormap from 2D Noisemap
         Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
         for (int y = 0; y < mapChunkSize; y++)
         {
             for (int x = 0; x < mapChunkSize; x++)
             {
+                //while looping through noiseMap. use falloff map
                 if (useFalloff)
                 {
                     noiseMap[x, y] = Mathf.Clamp01(noiseMap[x, y] - falloffMap[x, y]);
@@ -138,13 +147,14 @@ public class MapGenerator : MonoBehaviour
                 float currentHeight = noiseMap[x, y];
                 for (int i = 0; i < regions.Length; i++)
                 {
+                    //sections where we actual assigning the colors
                     if (currentHeight >= regions[i].height)
                     {
-                        colourMap[y*mapChunkSize + x] = regions[i].colour;
+                        colourMap[y*mapChunkSize + x] = regions[i].colour; //if its greater, then assign the color
                     }
                     else
                     {
-                        break;
+                        break; //only break if its less then the regions height
                     }
                 }
             }
@@ -153,8 +163,10 @@ public class MapGenerator : MonoBehaviour
         
     }
 
+    //call automatical whenever one of scripts variables changes in its vector
     void OnValidate()
     {
+        //wont allow to drop values below that number
         if (lacunarity < 1)
         {
             lacunarity = 1;
@@ -164,12 +176,14 @@ public class MapGenerator : MonoBehaviour
             octaves = 0;
         }
 
+        //runs the falloffmap even when games not run
         falloffMap = FallofGenerator.GenerateFollOffMap(mapChunkSize);
     }
 
+    //Holds callback data and Mapdata info. Make it Generic <T> so it can handle both mesh data and mapdata
     struct MapThreadInfo<T>
     {
-        public readonly Action<T> callback;
+        public readonly Action<T> callback; //structs should be unreadably after creations
         public readonly T parameter;
 
         public MapThreadInfo(Action<T> callback, T parameter) 
@@ -181,14 +195,16 @@ public class MapGenerator : MonoBehaviour
 
 }
 
+//terrain regions for different color for each height.
 [System.Serializable]
 public struct TerrainType
 {
-    public string name;
+    public string name; // water, grass, rock, etc.
     public float height;
-    public Color colour;
+    public Color colour; // color for terrain
 }
 
+//Gets the heightMap and Colourmap from the GenerateMapMethod
 public struct MapData
 {
     public readonly float[,] heightMap;
@@ -200,3 +216,17 @@ public struct MapData
         this.colourMap = colourMap;
     }
 }
+
+//Threadening
+/*
+spread the calculation of the map data and the mash data over multiple frames.
+EndlessTerrain will gets Mapgenerator data. But it wont get immediately because its generated over multiple frames
+
+    MapGenerator: RequestMapdata will take Action<MapData>callback
+    2. MapDataThread: add mapData + callback queue. 
+    3. outside of the method in the update methode, for(queue. Count>0) as long item is in the queue we call map data
+
+    EndlessTerrain: RequestMapData(OnMapDataReceived
+
+
+*/

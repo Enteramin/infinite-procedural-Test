@@ -7,8 +7,10 @@ public class MapGeneratorEditor : Editor {
 
     public override void OnInspectorGUI()
     {
+        //reference mapGen to target
         MapGenerator mapGen =(MapGenerator) target;
 
+        //autoupdate: if any value changed
         if (DrawDefaultInspector())
         {
             if (mapGen.autoUpdate)
@@ -16,6 +18,7 @@ public class MapGeneratorEditor : Editor {
                 mapGen.DrawMapIneditor();
             }
         }
+        //Generate Button
         if (GUILayout.Button("Generate"))
         {
             mapGen.DrawMapIneditor();

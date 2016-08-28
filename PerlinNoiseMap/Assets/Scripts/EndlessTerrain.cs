@@ -55,9 +55,9 @@ public class EndlessTerrain : MonoBehaviour
 
         for (int i = 0; i < terrainChunksVisibleLastUpdate.Count; i++)
         {
-            terrainChunksVisibleLastUpdate[i].SetVisible(false); // sets chunks inbisible which are not in viewing range
+            terrainChunksVisibleLastUpdate[i].SetVisible(true); // sets chunks inbisible which are not in viewing range
         }
-        terrainChunksVisibleLastUpdate.Clear();  //clears the list: makes chunks outside of viewer invisible
+        //terrainChunksVisibleLastUpdate.Clear();  //clears the list: makes chunks outside of viewer invisible
 
         int currentChunkCoordX = Mathf.RoundToInt(viewerPosition.x / chunkSize); //Gets Chunk size eg. middle = 0:0, left = -1:0
         int currentChunkCoordY = Mathf.RoundToInt(viewerPosition.y / chunkSize);

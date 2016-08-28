@@ -4,7 +4,7 @@ using System.Collections;
 public static class MeshGenerator
 {
 
-    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail)
+    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail, bool isFlatshaded)
     {
         AnimationCurve heightCurve = new AnimationCurve(_heightCurve.keys); //solves the problem with threadening. each curve has its own height curve
 
@@ -74,9 +74,15 @@ public static class MeshGenerator
             }
         }
 
+        if (isFlatshaded)
+        {
+            MeshData.RecalculateFlatShadedMeshData(meshData);
+        }
+
         return meshData; //meshdata instead of Mesh so threating can implemented
 
     }
+
 }
 
 public class MeshData
@@ -103,7 +109,7 @@ public class MeshData
         borderVertices = new Vector3[verticesPerLine * 4 + 4]; // *4 for each side + 4 for each corner
         borderTriangles = new int[24 * verticesPerLine]; //records the indices of each of the 6 vertices which makes the 2 triangles per square between each borderline and mesh. 4*number of vertices per line in the mesh = number of squares = 6 * 4 = 24 as inizialize
     }
-
+    
     //because vertices or uvs cant be add directly, this method needed
     public void AddVertex(Vector3 vertexPosition, Vector2 uv, int vertexIndex)
     {
@@ -217,6 +223,30 @@ public class MeshData
         mesh.uv = uvs;
         mesh.normals = CalculateNormals(); //anti seam 
         return mesh;
+    }
+
+    //Increasing LOD to 6 is recomended
+    //Flash Shading is limited to 105 Chunks because of the 65000 Vertices Limitation. 
+    public static void RecalculateFlatShadedMeshData(MeshData meshData)
+    {
+        Vector3[] oldVerts = meshData.vertices;
+        Vector2[] oldUvs = meshData.uvs;
+        int[] triangles = meshData.triangles;
+
+
+        Vector3[] vertices = new Vector3[triangles.Length];
+        Vector2[] uvs = new Vector2[triangles.Length];
+
+        for (int i = 0; i < triangles.Length; i++)
+        {
+            vertices[i] = oldVerts[triangles[i]];
+            uvs[i] = oldUvs[triangles[i]];
+            triangles[i] = i;
+        }
+
+        meshData.vertices = vertices;
+        meshData.triangles = triangles;
+        meshData.uvs = uvs;
     }
 
 }

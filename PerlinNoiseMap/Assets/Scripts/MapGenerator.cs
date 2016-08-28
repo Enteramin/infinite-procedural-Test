@@ -7,7 +7,7 @@ using System.Collections.Generic;
 public class MapGenerator : MonoBehaviour
 {
 
-    public enum DrawMode { NoiseMap, ColourMap, Mesh, FalloffMap };
+    public enum DrawMode { NoiseMap, ColourMap, Mesh, FalloffMap, Crater };
     public DrawMode drawMode;
 
     public Noise.NormalizeMode normalizeMode;
@@ -25,16 +25,27 @@ public class MapGenerator : MonoBehaviour
     public int seed;
     public Vector2 offset;
 
-    public bool useFalloff;
+    [Range(0, 100)]
+    public int craterProbability;
+
+    public float craterSize;
+    [Range(-3, 3)] //exponent: everything above or below will crash unity
+    public int moda;
+    public float modb;
+
+    public bool cleanChunks;
 
     public float meshHeightMultiplier;
     public AnimationCurve meshHeightCurve;
+
+    public bool isFlatshaded;
 
     public bool autoUpdate;
 
     public TerrainType[] regions;
 
     float[,] falloffMap; //stores the falloffMap
+    float[,] craterMap; //stores craterMap
 
     Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
     Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
@@ -42,7 +53,8 @@ public class MapGenerator : MonoBehaviour
     //use FallowMap
     void Awake()
     {
-        falloffMap = FalloffGenerator.GenerateFalloffMap(mapChunkSize);
+        falloffMap = FalloffGenerator.GenerateFalloffMap(mapChunkSize + 2);
+        //craterMap = CraterGenerator.GenerateCrater(mapChunkSize + 2);
     }
 
     public void DrawMapInEditor()
@@ -60,11 +72,15 @@ public class MapGenerator : MonoBehaviour
         }
         else if (drawMode == DrawMode.Mesh)
         {
-            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, editorPreviewLOD), TextureGenerator.TextureFromColourMap(mapData.colourMap, mapChunkSize, mapChunkSize));
+            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, editorPreviewLOD, isFlatshaded), TextureGenerator.TextureFromColourMap(mapData.colourMap, mapChunkSize, mapChunkSize));
         }
         else if (drawMode == DrawMode.FalloffMap)
         {
             display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize)));
+        }
+        else if (drawMode == DrawMode.Crater)
+        {
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterGenerator.GenerateCrater(mapChunkSize, craterSize, moda, modb)));
         }
     }
 
@@ -102,7 +118,7 @@ public class MapGenerator : MonoBehaviour
     //Gets the Height Map from GeneratteTerrainmesh
     void MeshDataThread(MapData mapData, int lod, Action<MeshData> callback)
     {
-        MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod);
+        MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod, isFlatshaded);
         lock (meshDataThreadInfoQueue)
         {
             meshDataThreadInfoQueue.Enqueue(new MapThreadInfo<MeshData>(callback, meshData));
@@ -130,22 +146,30 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    MapData GenerateMapData(Vector2 centre)
+    public MapData GenerateMapData(Vector2 centre)
     {
         //fetching 2D NoiseMap from the Noise Class
         // +2 for the border vertices. generates 1 extra noise value on left and right side
         float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, normalizeMode);
 
+        System.Random rnd = new System.Random(); //Random percentage to get a crater
+        int rndFall = rnd.Next(0, 100);
+
         //generate 1D Colormap from 2D Noisemap
-        Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
+        Color[] colourMap = new Color[(mapChunkSize + 2) * (mapChunkSize + 2)];
         for (int y = 0; y < mapChunkSize; y++)
         {
+
             for (int x = 0; x < mapChunkSize; x++)
             {
-                //while looping through noiseMap. use falloff map
-                if (useFalloff)
+                if (cleanChunks)
                 {
-                    noiseMap[x, y] = Mathf.Clamp01(noiseMap[x, y] - falloffMap[x, y]);
+                    noiseMap[x, y] = craterMap[x, y];
+                }
+                //while looping through noiseMap. use falloff map
+                else if (craterProbability >= rndFall)
+                {
+                    noiseMap[x, y] = craterMap[x, y] - noiseMap[x, y] ;
                 }
                 float currentHeight = noiseMap[x, y];
                 for (int i = 0; i < regions.Length; i++)
@@ -181,7 +205,9 @@ public class MapGenerator : MonoBehaviour
         }
 
         //runs the falloffmap even when games not run
-        falloffMap = FalloffGenerator.GenerateFalloffMap(mapChunkSize);
+        falloffMap = FalloffGenerator.GenerateFalloffMap(mapChunkSize + 2);
+        craterMap = CraterGenerator.GenerateCrater(mapChunkSize + 2 , craterSize, moda, modb);
+
     }
 
     //Holds callback data and Mapdata info. Make it Generic <T> so it can handle both mesh data and mapdata

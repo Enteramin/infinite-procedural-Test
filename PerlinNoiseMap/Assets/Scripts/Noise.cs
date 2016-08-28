@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityEditor;
 
 //MonoBehaviour not needed because it is not applied to any Object. static because no multiple instances 
 public static class Noise
@@ -8,19 +7,15 @@ public static class Noise
     //so normalize dont make seams between chunks
     //local min,max
     //estimating global min, max
-    public enum NormalizeMode
-    {
-        Local, 
-        Global 
-    };
-    
-    public static float[,] GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistence, float lacunarity, Vector2 offset, NormalizeMode normalizeMode)
-    {
-        float[,] noiseMap = new float[mapWidth,mapHeight];
+    public enum NormalizeMode { Local, Global };
 
-        System.Random prng = new System.Random(seed); //pseudorandomnumber for seed
+    public static float[,] GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset, NormalizeMode normalizeMode)
+    {
+        float[,] noiseMap = new float[mapWidth, mapHeight];
+
+        System.Random prng = new System.Random(seed);  //pseudorandomnumber for seed
         Vector2[] octaveOffsets = new Vector2[octaves];
-        
+
         float maxPossibleHeight = 0;
         float amplitude = 1;
         float frequency = 1;
@@ -30,13 +25,13 @@ public static class Noise
         for (int i = 0; i < octaves; i++)
         {
             float offsetX = prng.Next(-100000, 100000) + offset.x;
-            float offsetY = prng.Next(-100000, 100000) - offset.y; // minus so y offset gets inverted, scroll up to see whats below
+            float offsetY = prng.Next(-100000, 100000) - offset.y; //minus so y offset gets inverted, scroll up to see whats below
 
             //makes it possible to scroll in x and y
             octaveOffsets[i] = new Vector2(offsetX, offsetY);
 
             maxPossibleHeight += amplitude;
-            amplitude *= persistence;
+            amplitude *= persistance;
         }
 
         if (scale <= 0)
@@ -49,37 +44,41 @@ public static class Noise
         float minLocalNoiseHeight = float.MaxValue;
 
         //zooming in in the middle instead of corner
-        float halfWidth = mapWidth/2f;
-        float halfHeigth = mapHeight/2f;
+        float halfWidth = mapWidth / 2f;
+        float halfHeight = mapHeight / 2f;
 
         //basic changes for perlin noise map
         for (int y = 0; y < mapHeight; y++)
         {
             for (int x = 0; x < mapWidth; x++)
             {
+
                 amplitude = 1; //reset the values to 1
                 frequency = 1;
-                float noiseHeigth = 0;
+                float noiseHeight = 0;
 
-                for(int i = 0; i< octaves; i++) { 
+                for (int i = 0; i < octaves; i++)
+                {
                     //at which point sampling the height values
-                float sampleX = (x- halfWidth + octaveOffsets[i].x)  / scale * frequency; //scale of noise for noninteger values. offset is inside the brackets, so landmasses dont change in shape, while adjusting offset)
-                float sampleY = (y- halfHeigth + octaveOffsets[i].y) / scale * frequency;
+                    float sampleX = (x - halfWidth + octaveOffsets[i].x) / scale * frequency;  //scale of noise for noninteger values. offset is inside the brackets, so landmasses dont change in shape, while adjusting offset)
+                    float sampleY = (y - halfHeight + octaveOffsets[i].y) / scale * frequency;
 
-                float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1; // for mor interesting results * 2 -1 to get between -1 to 1; so sometimes noise is negative
-                    noiseHeigth += perlinValue*amplitude; //calculates height for each of the octaves. maximum Scenario is when perlinvalue is 1 every single octave  ->
+                    float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1; // for mor interesting results * 2 -1 to get between -1 to 1; so sometimes noise is negative
+                    noiseHeight += perlinValue * amplitude; //calculates height for each of the octaves. maximum Scenario is when perlinvalue is 1 every single octave  ->
 
-                    amplitude *= persistence; //and amplitude also gets multiplied by persistence
+                    amplitude *= persistance; //and amplitude also gets multiplied by persistence
                     frequency *= lacunarity;
                 }
-                if (noiseHeigth > maxLocalNoiseHeight)
+
+                if (noiseHeight > maxLocalNoiseHeight)
                 {
-                    maxLocalNoiseHeight = noiseHeigth;
-                } else if (noiseHeigth < minLocalNoiseHeight)
-                {
-                    minLocalNoiseHeight = noiseHeigth;
+                    maxLocalNoiseHeight = noiseHeight;
                 }
-                noiseMap[x, y] = noiseHeigth; //apply to noise map
+                else if (noiseHeight < minLocalNoiseHeight)
+                {
+                    minLocalNoiseHeight = noiseHeight;
+                }
+                noiseMap[x, y] = noiseHeight; //apply to noise map
             }
         }
 
@@ -95,11 +94,13 @@ public static class Noise
                 //do something else, that is consistent over the entire map
                 else //global mode
                 {
-                    float normalizedHeight = (noiseMap[x, y] + 1)/(maxPossibleHeight/0.9f); //reverse the operation where perlinValue is *2 and then subtracted with -1 above with adding +1 and dividing with maxPossibleHeight
-                    noiseMap[x, y] = Mathf.Clamp(normalizedHeight,0,int.MaxValue); //Clamp so it is at least not less than 0
+                    float normalizedHeight = (noiseMap[x, y] + 1) / (maxPossibleHeight / 0.9f);  //reverse the operation where perlinValue is *2 and then subtracted with -1 above with adding +1 and dividing with maxPossibleHeight
+                    noiseMap[x, y] = Mathf.Clamp(normalizedHeight, 0, int.MaxValue); //Clamp so it is at least not less than 0
                 }
             }
         }
+
         return noiseMap;
     }
+
 }

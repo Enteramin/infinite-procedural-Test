@@ -7,7 +7,7 @@ public static class Noise
     //so normalize dont make seams between chunks
     //local min,max
     //estimating global min, max
-    public enum NormalizeMode { Local, Global };
+    public enum NormalizeMode { Local, Global};
 
     public static float[,] GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset, NormalizeMode normalizeMode)
     {

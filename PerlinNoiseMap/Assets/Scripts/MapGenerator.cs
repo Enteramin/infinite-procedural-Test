@@ -6,6 +6,8 @@ using System.Collections.Generic;
 
 public class MapGenerator : MonoBehaviour
 {
+    public enum TypeOfTerrain { own, Earthlike, Moonlike };
+    public TypeOfTerrain terrainType;
 
     public enum DrawMode { NoiseMap, ColourMap, Mesh, FalloffMap, Crater, CraterRing, CraterFalloff, CraterMod1, CraterMod2 };
     public DrawMode drawMode;
@@ -14,7 +16,7 @@ public class MapGenerator : MonoBehaviour
 
     public const int mapChunkSize = 239; //less than 255^2: w-1 = 240: 240 has properties of 2,4,6,8,10,12: -2 because of border vertices
     [Range(0, 6)] //makes it to slider
-    public int editorPreviewLOD; //lod only for editor
+    public int LOD; //lod only for editor
     public float noiseScale;
 
     public int octaves;
@@ -29,8 +31,15 @@ public class MapGenerator : MonoBehaviour
     public int craterProbability;
 
     public float craterSize;
-    [Range(-300, 300)] //exponent: everything above or below will crash unity
-    public float moda;
+    [Range(0, 10)] //exponent: everything above or below will crash unity
+    public float craterIntensity;
+
+    public float posX;
+    public float posY;
+    public float ellipseX;
+    public float ellipseY;
+    public bool weightenedAngle;
+
     public float modb;
 
     public bool cleanChunks;
@@ -76,7 +85,7 @@ public class MapGenerator : MonoBehaviour
         }
         else if (drawMode == DrawMode.Mesh)
         {
-            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, editorPreviewLOD, isFlatshaded), TextureGenerator.TextureFromColourMap(mapData.colourMap, mapChunkSize, mapChunkSize));
+            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, LOD, isFlatshaded), TextureGenerator.TextureFromColourMap(mapData.colourMap, mapChunkSize, mapChunkSize));
         }
         else if (drawMode == DrawMode.FalloffMap)
         {
@@ -84,7 +93,7 @@ public class MapGenerator : MonoBehaviour
         }
         else if (drawMode == DrawMode.Crater)
         {
-            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterGenerator.GenerateCrater(mapChunkSize, craterSize, moda, modb)));
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterGenerator.GenerateCrater(mapChunkSize, craterSize, craterIntensity, posX, posY, ellipseX, ellipseY, weightenedAngle)));
         }
         else if (drawMode == DrawMode.CraterRing)
         {
@@ -96,7 +105,7 @@ public class MapGenerator : MonoBehaviour
         }
         else if (drawMode == DrawMode.CraterMod1)
         {
-            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterModification1.GenerateCraterModification1(mapChunkSize, craterSize, moda, modb)));
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterModification1.GenerateCraterModification1(mapChunkSize, craterSize, craterIntensity, modb)));
         }
         else if (drawMode == DrawMode.CraterMod2)
         {
@@ -226,7 +235,7 @@ public class MapGenerator : MonoBehaviour
 
         //runs the falloffmap even when games not run
         falloffMap = FalloffGenerator.GenerateFalloffMap(mapChunkSize + 2);
-        craterMap = CraterGenerator.GenerateCrater(mapChunkSize + 2 , craterSize, moda, modb);
+        craterMap = CraterGenerator.GenerateCrater(mapChunkSize + 2 , craterSize, craterIntensity, posX, posY, ellipseX, ellipseY, weightenedAngle);
         //craterRing = CraterRingGenerator.GenerateCraterRing(mapChunkSize + 2, craterSize);
         //craterFalloff = CraterFalloffGenerator.GenerateCraterFalloff(mapChunkSize + 2, craterSize);
         //craterMod1 = CraterModification1.GenerateCraterModification1(mapChunkSize + 2, craterSize);

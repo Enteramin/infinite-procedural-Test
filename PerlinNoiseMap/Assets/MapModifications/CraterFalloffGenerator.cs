@@ -39,11 +39,11 @@ public static class CraterFalloffGenerator
                 distanceToCenter2 = distanceToCenter / craterSize;
 
 
-                //map[i, j] = Evaluate(distanceToCenter2, moda, modb);
-                //map[i, j] = (distanceToCenter * (Evaluate(distanceToCenter, moda, modb) * 2 - 1)) - distanceToCenter;
-                //map[i, j] = Evaluate(distanceToCenter2, moda, modb) / 2; // / 2 to be under max 1
+                //map[i, j] = Evaluate(distanceToCenter2, craterIntensity, modb);
+                //map[i, j] = (distanceToCenter * (Evaluate(distanceToCenter, craterIntensity, modb) * 2 - 1)) - distanceToCenter;
+                //map[i, j] = Evaluate(distanceToCenter2, craterIntensity, modb) / 2; // / 2 to be under max 1
                 //map[i, j] = Logar(distanceToCenter2) / 2;
-                //map[i, j] = Logar(distanceToCenter2, moda, modb)/2;
+                //map[i, j] = Logar(distanceToCenter2, craterIntensity, modb)/2;
                 map[i, j] = distanceToCenter2;
             }
         }

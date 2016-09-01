@@ -31,6 +31,7 @@ public class EndlessTerrain : MonoBehaviour
 
         maxViewDst = detailLevels[detailLevels.Length - 1].visibleDstThreshold; //last element of detaillevel
         chunkSize = MapGenerator.mapChunkSize - 1;
+        //Brush Size cannot be changed, because LOD needs more chunks to work!
         chunksVisibleInViewDst = Mathf.RoundToInt(maxViewDst / chunkSize); //How many chunks are visible
 
 

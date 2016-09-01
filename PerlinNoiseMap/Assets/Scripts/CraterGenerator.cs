@@ -49,9 +49,9 @@ public static class CraterGenerator
         return map;
     }
 
-    static float IntensityOfCrater(float value, float a)
+    static float IntensityOfCrater(float value, float intensity)
     {
-        return (Mathf.Pow(value, a) * value) / value;
+        return (Mathf.Pow(value, intensity) * value) / value;
     }
 
     static float Fourir(float bob, float a, float b)

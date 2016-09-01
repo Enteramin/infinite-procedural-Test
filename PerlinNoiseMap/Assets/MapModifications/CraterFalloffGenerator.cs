@@ -4,64 +4,56 @@ public static class CraterFalloffGenerator
 {
 
     //substracts from noise so landmass is fully sorrounded
-    public static float[,] GenerateCraterFalloff(int chunkSize, float craterSize, float moda, float modb)
+    public static float[,] GenerateCraterFalloff(int chunkSize, float craterSize, float craterIntensity, float posX, float posY, float ellipseX, float ellipseY, bool weightenedAngle, float modb)
     {
         float[,] map = new float[chunkSize, chunkSize];
 
-        int centerX = 124;
-        int centerY = 124;
+        //radius
+        int centerX = chunkSize / 2;
+        int centerY = chunkSize / 2;
 
         float distanceX;
         float distanceY;
 
+        //float ellipseX, float ellipseY, bool weightenedAngle
+
         float distanceToCenter;
         float distanceToCenter2;
 
-        //float distanceToCenter;
 
+        //float distanceToCenter;
         //i and j is coordinate of a point inside the square map
         for (int i = 0; i < chunkSize; i++)
         {
             for (int j = 0; j < chunkSize; j++)
             {
-                //chunkSize /= 2;
-                ////take the coordinates and make them in a range from -1 to 1
-                float x = i / (float)chunkSize * 2 - 1;
-                float y = j / (float)chunkSize * 2 - 1;
+                //one of them mult with 20 for ellipse
+                distanceX = ellipseX * (centerX - posX - i) * (centerX - posX - i);
+                distanceY = ellipseY * (centerY - posY - j) * (centerY - posY - j);
 
-                distanceX = (centerX - i) * (centerX - i);
-                distanceY = (centerY - j) * (centerY - j);
+                if (weightenedAngle)
+                {
+                    distanceX = ellipseX * ((j * posX) - i) * ((j * posX) - i);
+                    //j always gets one full chunksize before i has a full one. thats why chunksize must be 
+                    distanceY = ellipseY * (chunkSize - i - j) * (chunkSize - i - j);
+                }
 
+                // multiplicate for line graph 
                 distanceToCenter = Mathf.Sqrt(distanceX + distanceY);
 
                 //number shows how big the crater will be
-                distanceToCenter2 = distanceToCenter / craterSize;
+                distanceToCenter2 = distanceToCenter / (craterSize * 10f);
 
-
-                //map[i, j] = Evaluate(distanceToCenter2, craterIntensity, modb);
-                //map[i, j] = (distanceToCenter * (Evaluate(distanceToCenter, craterIntensity, modb) * 2 - 1)) - distanceToCenter;
-                //map[i, j] = Evaluate(distanceToCenter2, craterIntensity, modb) / 2; // / 2 to be under max 1
-                //map[i, j] = Logar(distanceToCenter2) / 2;
-                //map[i, j] = Logar(distanceToCenter2, craterIntensity, modb)/2;
-                map[i, j] = distanceToCenter2;
+                map[i, j] = IntensityOfCrater(distanceToCenter2, craterIntensity, modb);
             }
         }
 
         return map;
     }
 
-    //modulates the values so its not linear but a graph
-    static float Evaluate(float value, float a, float b)
+    static float IntensityOfCrater(float value, float intensity, float modb)
     {
-        //float a = 3f;
-        //float b = 2.2f;
-        // x^a / ( x^a + (b-bx)^a )
-        return Mathf.Pow(value, a) / (Mathf.Pow(value, a) + Mathf.Pow(b - b * value, a));
-    }
-
-    static float Sin(float value, float a, float b)
-    {
-        return (Mathf.PI * b) - ((Mathf.Sin(value) * a) / value);
+        return (Mathf.Pow(value, intensity) * value) / value;
     }
 
     static float Fourir(float bob, float a, float b)
@@ -75,8 +67,8 @@ public static class CraterFalloffGenerator
         return value;
     }
 
-    static float sq(float value, float a, float b)
+    static float Wsin(float value, float intensity, float modb)
     {
-        return Mathf.Pow(value, a) + value * b;
+        return -((Mathf.Sin(value)*intensity) /value);
     }
 }

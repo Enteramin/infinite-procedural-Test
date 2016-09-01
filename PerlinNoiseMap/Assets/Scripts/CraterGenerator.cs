@@ -1,8 +1,4 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
-using System.ComponentModel;
-using System.Diagnostics;
+﻿using UnityEngine;
 
 public static class CraterGenerator
 {
@@ -13,7 +9,7 @@ public static class CraterGenerator
         //radius
         int centerX = chunkSize / 2;
         int centerY = chunkSize / 2;
-        
+
         float distanceX;
         float distanceY;
 
@@ -30,21 +26,21 @@ public static class CraterGenerator
             for (int j = 0; j < chunkSize; j++)
             {
                 //one of them mult with 20 for ellipse
-                distanceX = ellipseX*((centerX- posX) - (i)) * (centerX - (i));
-                distanceY = ellipseY*((centerY- posY) - j) * (centerY - j);
+                distanceX = ellipseX * (centerX - posX - i) * (centerX - posX - i);
+                distanceY = ellipseY * (centerY - posY - j) * (centerY - posY - j);
 
                 if (weightenedAngle)
                 {
                     distanceX = ellipseX * ((j * posX) - i) * ((j * posX) - i);
                     //j always gets one full chunksize before i has a full one. thats why chunksize must be 
-                    distanceY = ellipseY * ((chunkSize - i) - j) * ((chunkSize - i) - j);
+                    distanceY = ellipseY * (chunkSize - i - j) * (chunkSize - i - j);
                 }
 
                 // multiplicate for line graph 
                 distanceToCenter = Mathf.Sqrt(distanceX + distanceY);
 
                 //number shows how big the crater will be
-                distanceToCenter2 = distanceToCenter / (craterSize*10f);
+                distanceToCenter2 = distanceToCenter / (craterSize * 10f);
 
                 map[i, j] = IntensityOfCrater(distanceToCenter2, craterIntensity);
             }
@@ -63,7 +59,7 @@ public static class CraterGenerator
         float value = 0;
         for (int i = 0; i < a; i++)
         {
-            value = (float)((Math.PI / 10) - Mathf.Sin(i) / i * (Mathf.Cos(i * bob) * b));
+            value = (float)((Mathf.PI / 10) - Mathf.Sin(i) / i * (Mathf.Cos(i * bob) * b));
         }
 
         return value;

@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
-public static class CraterRingGenerator
+public static class CraterStripesGenerator
 {
 
     //substracts from noise so landmass is fully sorrounded
-    public static float[,] GenerateCraterRing(int chunkSize, float craterSize, float moda, float modb)
+    public static float[,] GenerateCraterStripes(int chunkSize, float craterSize)
     {
         //direction: 0 = top, 1 = right, 2 = bottom, 3 = left, 4 = all sides
         float[,] map = new float[chunkSize, chunkSize];
@@ -33,9 +33,6 @@ public static class CraterRingGenerator
                 x4 = j - radius;
                 dSquared = x4 * x4 + y4 * y4;
 
-                //straight lines without a ring
-                dSquared /= 2;
-
                 if (dSquared <= radiusSquared)
                 {
                     //f2 = (float) Math.Round((255*Math.Sqrt(dSquared))/radius);
@@ -43,13 +40,16 @@ public static class CraterRingGenerator
                     //g2 = (float) Math.Round(180*(1 + Math.Atan2(y4, x4)/Math.PI));
 
                     // / radius for uneven round intensity
-                    f2 = (float)Mathf.Round((255 * Mathf.Sqrt(dSquared)));
+                    f2 = (float)Mathf.Round((255 * Mathf.Sqrt(dSquared)) / radius);
 
-                    //mod a for number of stripes
-                    g2 = (float)(180 * (1 + Mathf.Atan2(y4, x4) / Mathf.PI)) * moda;
+                    g2 = (float)(180 * (1 + Mathf.Atan2(y4, x4) / Mathf.PI));
 
                     //drehen
                     g2 += 90;
+                    if (g2 > 360)
+                    {
+                        g2 -= 360;
+                    }
                 }
 
                 //take the coordinates and make them in a range from -1 to 1
@@ -79,7 +79,7 @@ public static class CraterRingGenerator
                 //Radial symetrical sinus curve. Everytime sinus is above 0 the line gets drawn
                 //multiplicating with Sin g2 so values between 0.0 to 1.0 to 0.0 gets drawn too and edges are softer
                 if (Mathf.Sin(g2) > 0)
-                    map[i, j] = (Mathf.Sqrt(f2 / g2)) * (modb/100f) * Mathf.Sin(g2);
+                    map[i, j] = Mathf.Sqrt(f2 / g2) * Mathf.Pow(Mathf.Sin(g2), 1.0f);
             }
         }
 
@@ -87,8 +87,10 @@ public static class CraterRingGenerator
     }
 
     //modulates the values so its not linear but a graph
-    static float Evaluate(float value, float a, float b)
+    static float Evaluate(float value)
     {
+        float a = 3;
+        float b = 2.2f;
         // x^a / ( x^a + (b-bx)^a )
         return Mathf.Pow(value, a) / (Mathf.Pow(value, a) + Mathf.Pow(b - b * value, a));
     }

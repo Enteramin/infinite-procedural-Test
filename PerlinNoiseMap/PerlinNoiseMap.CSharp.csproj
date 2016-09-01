@@ -66,7 +66,12 @@
     <Compile Include="Assets\MapModifications\CraterFalloffGenerator.cs" />
     <Compile Include="Assets\MapModifications\CraterModification1.cs" />
     <Compile Include="Assets\MapModifications\CraterModification2.cs" />
+    <Compile Include="Assets\MapModifications\CraterPseudoRndGenerator.cs" />
+    <Compile Include="Assets\MapModifications\CraterQuadFalloff.cs" />
+    <Compile Include="Assets\MapModifications\CraterQuadFalloffGenerator.cs" />
     <Compile Include="Assets\MapModifications\CraterRingGenerator.cs" />
+    <Compile Include="Assets\MapModifications\CraterStripes.cs" />
+    <Compile Include="Assets\MapModifications\CraterStripesGenerator.cs" />
     <Compile Include="Assets\Scripts\CraterGenerator.cs" />
     <Compile Include="Assets\Scripts\EndlessTerrain.cs" />
     <Compile Include="Assets\Scripts\FalloffGenerator.cs" />

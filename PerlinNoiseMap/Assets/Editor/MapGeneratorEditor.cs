@@ -25,5 +25,7 @@ public class MapGeneratorEditor : Editor
         {
             mapGen.DrawMapInEditor();
         }
+
+        if (GUILayout.Button("RnDNotYetDone"));
     }
 }

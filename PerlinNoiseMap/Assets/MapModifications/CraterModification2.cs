@@ -1,60 +1,69 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public static class CraterModification2
 {
 
     //substracts from noise so landmass is fully sorrounded
-    public static float[,] GenerateCraterModification2(int size, float craterSize)
+    public static float[,] GenerateCraterModification2(int chunkSize, float craterSize, float craterIntensity, float posX, float posY, float ellipseX, float ellipseY, bool weightenedAngle)
     {
-        //direction: 0 = top, 1 = right, 2 = bottom, 3 = left, 4 = all sides
-        float[,] map = new float[size, size];
+        float[,] map = new float[chunkSize, chunkSize];
 
-        float x;
-        float y;
-        float value = 0;
-        int direction = 4; //space holder
+        //radius
+        int centerX = chunkSize / 2;
+        int centerY = chunkSize / 2;
 
+        float distanceX;
+        float distanceY;
+
+        //float ellipseX, float ellipseY, bool weightenedAngle
+
+        float distanceToCenter;
+        float distanceToCenter2;
+
+
+        //float distanceToCenter;
         //i and j is coordinate of a point inside the square map
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < chunkSize; i++)
         {
-            for (int j = 0; j < size; j++)
+            for (int j = 0; j < chunkSize; j++)
             {
-                //take the coordinates and make them in a range from -1 to 1
-                x = i / (float)size * 2 - 1;
-                y = j / (float)size * 2 - 1;
+                //one of them mult with 20 for ellipse
+                distanceX = ellipseX * (centerX - posX - i) * (centerX - posX - i);
+                distanceY = ellipseY * (centerY - posY - j) * (centerY - posY - j);
 
-                //get the value to use for map, find out which one, x or y, is closest to the edge of the square. which one is closer to 1
-                //float value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
+                if (weightenedAngle)
+                {
+                    distanceX = ellipseX * ((j * posX) - i) * ((j * posX) - i);
+                    //j always gets one full chunksize before i has a full one. thats why chunksize must be 
+                    distanceY = ellipseY * (chunkSize - i - j) * (chunkSize - i - j);
+                }
 
-                if (direction == 0)
-                    value = -y;
+                // multiplicate for line graph 
+                distanceToCenter = Mathf.Sqrt(distanceX + distanceY);
 
-                if (direction == 1)
-                    value = -x;
+                //number shows how big the crater will be
+                distanceToCenter2 = distanceToCenter / (craterSize * 10f);
 
-                if (direction == 2)
-                    value = y;
-
-                if (direction == 3)
-                    value = x;
-
-                if (direction == 4)
-                    value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
-
-                map[i, j] = Evaluate(value);
+                map[i, j] = IntensityOfCrater(distanceToCenter2, craterIntensity);
             }
         }
 
         return map;
     }
 
-    //modulates the values so its not linear but a graph
-    static float Evaluate(float value)
+    static float IntensityOfCrater(float value, float a)
     {
-        float a = 3;
-        float b = 2.2f;
-        // x^a / ( x^a + (b-bx)^a )
-        return Mathf.Pow(value, a) / (Mathf.Pow(value, a) + Mathf.Pow(b - b * value, a));
+        return (Mathf.Pow(value, a) * value) / value;
+    }
+
+    static float Fourir(float bob, float a, float b)
+    {
+        float value = 0;
+        for (int i = 0; i < a; i++)
+        {
+            value = (float)((Mathf.PI / 10) - Mathf.Sin(i) / i * (Mathf.Cos(i * bob) * b));
+        }
+
+        return value;
     }
 }

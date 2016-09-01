@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public static class CraterFalloffGenerator
 {
 
     //substracts from noise so landmass is fully sorrounded
-    public static float[,] GenerateCraterFalloff(int chunkSize, float craterSize)
+    public static float[,] GenerateCraterFalloff(int chunkSize, float craterSize, float moda, float modb)
     {
         float[,] map = new float[chunkSize, chunkSize];
 

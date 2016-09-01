@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic; //for dictionary
 
 public class EndlessTerrain : MonoBehaviour

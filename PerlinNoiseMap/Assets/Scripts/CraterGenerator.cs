@@ -24,14 +24,47 @@ public static class CraterGenerator
         float triangle;
         float square;
 
-            //float distanceToCenter;
+        int radius = chunkSize / 2;
+        int radiusSquared = radius * radius;
+        int x4;
+        int y4;
+        int dSquared;
+        float f2 = 0;
+        float g2 = 0;
 
-            //i and j is coordinate of a point inside the square map
-            for (int i = 0; i < chunkSize; i++)
+
+        //float distanceToCenter;
+
+        //i and j is coordinate of a point inside the square map
+        for (int i = 0; i < chunkSize; i++)
             {
-                stripes = (i + 1)*5;
+
+            y4 = chunkSize - 1 - i - radius;
+
             for (int j = 0; j < chunkSize; j++)
             {
+                x4 = j - radius;
+                dSquared = x4 * x4 + y4 * y4;
+
+                if (dSquared <= radiusSquared)
+                {
+                    //f2 = (float) Math.Round((255*Math.Sqrt(dSquared))/radius);
+
+                    //g2 = (float) Math.Round(180*(1 + Math.Atan2(y4, x4)/Math.PI));
+
+                    f2 = (float) Mathf.Round((255*Mathf.Sqrt(dSquared))/radius);
+
+                    //1.0 anzahl stripes
+                    g2 = (float) (180*(1+Mathf.Atan2(y4, x4)/Mathf.PI*1.0));
+
+                    //drehen
+                    g2 += 90;
+                    //if (g2 > 360)
+                    //{
+                    //    g2 -= 360;
+                    //}
+                }
+
                 //chunkSize /= 2;
                 ////take the coordinates and make them in a range from -1 to 1
                 float x = i / (float)chunkSize * 2 - 1;
@@ -75,8 +108,10 @@ public static class CraterGenerator
                 //map[i, j] = Evaluate(distanceToCenter2, moda, modb) / 2; // / 2 to be under max 1
                 //map[i, j] = Logar(distanceToCenter2) / 2;
                 //map[i, j] = Logar(distanceToCenter2, moda, modb)/2;
-                if(Mathf.Sin(distanceToCenter) == distanceToCenter2)
-                map[i, j] = Evaluate(distanceToCenter, moda, modb);
+                //if (Mathf.Sin(distanceToCenter) == distanceToCenter2)
+                
+                if(Mathf.Sin(g2) > 0)
+                    map[i, j] = Mathf.Sqrt(f2 / g2 ) * Mathf.Pow(Mathf.Sin(g2), 1.0f);
             }
         }
 

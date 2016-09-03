@@ -43,10 +43,11 @@ public static class CraterStripesGenerator
                     //g2 = (float) Math.Round(180*(1 + Math.Atan2(y4, x4)/Math.PI));
 
                     // / radius for uneven round intensity
-                    f2 = (float)Mathf.Round((255 * Mathf.Sqrt(dSquared)));
+                    f2 = (float)Mathf.Round(( Mathf.Sqrt(dSquared)));
 
                     //mod a for number of stripes
-                    g2 = (float)(180 * (1 + Mathf.Atan2(y4, x4) / Mathf.PI)) * moda;
+                    //gewichtet
+                    g2 = (float)Mathf.Atan2(y4, x4) * moda*10;
 
                     //drehen
                     //g2 += 90;
@@ -79,7 +80,7 @@ public static class CraterStripesGenerator
                 //Radial symetrical sinus curve. Everytime sinus is above 0 the line gets drawn
                 //multiplicating with Sin g2 so values between 0.0 to 1.0 to 0.0 gets drawn too and edges are softer
                 if (Mathf.Sin(g2) > 0)
-                    map[i, j] = (Mathf.Sqrt(f2 / g2)) * (modb / 100f) * Mathf.Sin(g2);
+                    map[i, j] = (Mathf.Sqrt(f2)) * (modb / 100f) * Mathf.Sin(g2);
             }
         }
 

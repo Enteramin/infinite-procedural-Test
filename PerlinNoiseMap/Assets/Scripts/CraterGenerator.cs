@@ -57,10 +57,13 @@ public static class CraterGenerator
                 distanceToCenter2 = distanceToCenter / craterSize;
 
                 //for calculating the other masks: The result of dividing with cratersize cannot exceed 1 at the white area
-                if (distanceToCenter2 >= 1)
+                if (distanceToCenter2 > 1)
                     distanceToCenter2 = 1;
 
-                map[i, j] = Mathf.Abs(IntensityOfCrater(distanceToCenter2, craterIntensity));
+                if (distanceToCenter2 < 0)
+                    distanceToCenter2 = 0;
+
+                map[i, j] = IntensityOfCrater(distanceToCenter2, craterIntensity);
             }
         }
 

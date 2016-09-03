@@ -20,6 +20,8 @@ public static class CraterModification1
         float distanceToCenter;
         float distanceToCenter2;
 
+        float x1;
+        float y2;
 
         //float distanceToCenter;
         //i and j is coordinate of a point inside the square map
@@ -27,6 +29,16 @@ public static class CraterModification1
         {
             for (int j = 0; j < chunkSize; j++)
             {
+
+                //x1 = (centerX - posX - i) / (float)chunkSize * 2 - 1;
+                //y2 = (centerY - posY - j) / (float)chunkSize * 2 - 1;
+                ////one of them mult with 20 for ellipse
+                //distanceX = ellipseX * x1 * x1;
+                //distanceY = ellipseY * y2 * y2;
+
+                float x = i / (float)chunkSize * 2 - 1;
+                float y = j / (float)chunkSize * 2 - 1;
+
                 //one of them mult with 20 for ellipse
                 distanceX = ellipseX * (centerX - posX - i) * (centerX - posX - i);
                 distanceY = ellipseY * (centerY - posY - j) * (centerY - posY - j);
@@ -38,11 +50,20 @@ public static class CraterModification1
                     distanceY = ellipseY * (chunkSize - i - j) * (chunkSize - i - j);
                 }
 
+                distanceX /= Mathf.Pow((float)chunkSize * 2, 2);
+                distanceY /= Mathf.Pow((float)chunkSize * 2, 2);
                 // multiplicate for line graph 
                 distanceToCenter = Mathf.Sqrt(distanceX + distanceY);
 
                 //number shows how big the crater will be
-                distanceToCenter2 = distanceToCenter / (craterSize * 10f);
+                distanceToCenter2 = distanceToCenter / craterSize;
+
+                //for calculating the other masks: The result of dividing with cratersize cannot exceed 1 at the white area
+                if (distanceToCenter2 > 1)
+                    distanceToCenter2 = 1;
+
+                if (distanceToCenter2 < 0)
+                    distanceToCenter2 = 0;
 
                 map[i, j] = IntensityOfCrater(distanceToCenter2, craterIntensity);
             }
@@ -51,9 +72,9 @@ public static class CraterModification1
         return map;
     }
 
-    static float IntensityOfCrater(float value, float a)
+    static float IntensityOfCrater(float value, float intensity)
     {
-        return (Mathf.Pow(value, a) * value) / value;
+        return (Mathf.Pow(value, intensity) * value) / value;
     }
 
     static float Fourir(float bob, float a, float b)

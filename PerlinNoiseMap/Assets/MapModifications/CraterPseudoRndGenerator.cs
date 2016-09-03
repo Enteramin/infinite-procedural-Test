@@ -56,12 +56,12 @@ public class CraterPseudoRndGenerator {
                 //number shows how big the crater will be
                 distanceToCenter2 = Mathf.Tan(x1 * Mathf.Cos(y1)) / craterSize;
 
+                if (distanceToCenter2 > 1)
+                    distanceToCenter2 = 1;
 
-                //map[i, j] = Evaluate(distanceToCenter2, moda, modb);
-                //map[i, j] = (distanceToCenter * (Evaluate(distanceToCenter, moda, modb) * 2 - 1)) - distanceToCenter;
-                //map[i, j] = Evaluate(distanceToCenter2, moda, modb) / 2; // / 2 to be under max 1
-                //map[i, j] = Logar(distanceToCenter2) / 2;
-                //map[i, j] = Logar(distanceToCenter2, moda, modb)/2;
+                if (distanceToCenter2 < 0)
+                    distanceToCenter2 = 0;
+
                 map[i, j] = Testering(distanceToCenter2, moda, modb);
             }
         }

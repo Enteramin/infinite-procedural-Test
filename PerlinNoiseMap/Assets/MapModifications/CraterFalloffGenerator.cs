@@ -38,11 +38,21 @@ public static class CraterFalloffGenerator
                     distanceY = ellipseY * (chunkSize - i - j) * (chunkSize - i - j);
                 }
 
+                distanceX /= Mathf.Pow((float)chunkSize * 2, 2);
+                distanceY /= Mathf.Pow((float)chunkSize * 2, 2);
+
                 // multiplicate for line graph 
                 distanceToCenter = Mathf.Sqrt(distanceX + distanceY);
 
                 //number shows how big the crater will be
-                distanceToCenter2 = distanceToCenter / (craterSize * 10f);
+                distanceToCenter2 = distanceToCenter / craterSize;
+
+                //for calculating the other masks: The result of dividing with cratersize cannot exceed 1 at the white area
+                if (distanceToCenter2 > 1)
+                    distanceToCenter2 = 1;
+
+                if (distanceToCenter2 < 0)
+                    distanceToCenter2 = 0;
 
                 map[i, j] = IntensityOfCrater(distanceToCenter2, craterIntensity, modb);
             }

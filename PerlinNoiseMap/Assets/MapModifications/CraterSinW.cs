@@ -14,7 +14,6 @@ public static class CraterSinW
         float distanceY;
 
         //float ellipseX, float ellipseY, bool weightenedAngle
-
         float distanceToCenter;
         float distanceToCenter2;
 

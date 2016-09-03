@@ -70,6 +70,8 @@
     <Compile Include="Assets\MapModifications\CraterQuadFalloff.cs" />
     <Compile Include="Assets\MapModifications\CraterQuadFalloffGenerator.cs" />
     <Compile Include="Assets\MapModifications\CraterRingGenerator.cs" />
+    <Compile Include="Assets\MapModifications\CraterSidedParable.cs" />
+    <Compile Include="Assets\MapModifications\CraterSinW.cs" />
     <Compile Include="Assets\MapModifications\CraterStripes.cs" />
     <Compile Include="Assets\MapModifications\CraterStripesGenerator.cs" />
     <Compile Include="Assets\Scripts\CraterGenerator.cs" />

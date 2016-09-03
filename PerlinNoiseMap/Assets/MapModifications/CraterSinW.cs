@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 
-public static class CraterGenerator
+public static class CraterSinW
 {
-    public static float[,] GenerateCrater(int chunkSize, float craterSize, float craterIntensity, float posX, float posY, float ellipseX, float ellipseY, bool weightenedAngle)
+    public static float[,] GenerateCraterSinW(int chunkSize, float craterSize, float craterIntensity, float posX, float posY, float ellipseX, float ellipseY, float modb)
     {
         float[,] map = new float[chunkSize, chunkSize];
 
         //radius
-        int centerX = chunkSize / 2 ;
+        int centerX = chunkSize / 2;
         int centerY = chunkSize / 2;
 
         float distanceX;
@@ -41,26 +41,22 @@ public static class CraterGenerator
                 distanceX = ellipseX * (centerX - posX - i) * (centerX - posX - i);
                 distanceY = ellipseY * (centerY - posY - j) * (centerY - posY - j);
 
-                if (weightenedAngle)
-                {
-                    distanceX = ellipseX * ((j * posX) - i) * ((j * posX) - i);
-                    //j always gets one full chunksize before i has a full one. thats why chunksize must be 
-                    distanceY = ellipseY * (chunkSize - i - j) * (chunkSize - i - j);
-                }
-
-                distanceX /= Mathf.Pow((float) chunkSize*2,2) ;
-                distanceY /= Mathf.Pow((float)chunkSize * 2, 2);
+                //distanceX /= Mathf.Pow((float)chunkSize * 2, 2);
+                //distanceY /= Mathf.Pow((float)chunkSize * 2, 2);
                 // multiplicate for line graph 
                 distanceToCenter = Mathf.Sqrt(distanceX + distanceY);
 
                 //number shows how big the crater will be
                 distanceToCenter2 = distanceToCenter / craterSize;
 
-                //for calculating the other masks: The result of dividing with cratersize cannot exceed 1 at the white area
-                if (distanceToCenter2 >= 1)
-                    distanceToCenter2 = 1;
 
-                map[i, j] = Mathf.Abs(IntensityOfCrater(distanceToCenter2, craterIntensity));
+                //for calculating the other masks: The result of dividing with cratersize cannot exceed 1 at the white area
+                //if (distanceToCenter2 >= 1)
+                //    distanceToCenter2 = 1;
+
+                
+
+                map[i, j] = Mathf.Abs(SinW(distanceToCenter2, craterIntensity, modb));
             }
         }
 
@@ -70,6 +66,11 @@ public static class CraterGenerator
     static float IntensityOfCrater(float value, float intensity)
     {
         return (Mathf.Pow(value, intensity) * value) / value;
+    }
+
+    static float SinW(float value, float intensity, float b)
+    {
+        return -(Mathf.Sin(value*b) * intensity / value);
     }
 
     static float Fourir(float bob, float a, float b)

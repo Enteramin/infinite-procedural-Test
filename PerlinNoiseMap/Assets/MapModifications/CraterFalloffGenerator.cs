@@ -45,7 +45,7 @@ public static class CraterFalloffGenerator
                 distanceToCenter = Mathf.Sqrt(distanceX + distanceY);
 
                 //number shows how big the crater will be
-                distanceToCenter2 = distanceToCenter / craterSize;
+                distanceToCenter2 = distanceToCenter / Mathf.Abs(craterSize);
 
                 //for calculating the other masks: The result of dividing with cratersize cannot exceed 1 at the white area
                 if (distanceToCenter2 > 1)
@@ -54,6 +54,7 @@ public static class CraterFalloffGenerator
                 if (distanceToCenter2 < 0)
                     distanceToCenter2 = 0;
 
+                //-1 for inverse so low numbers are outside
                 map[i, j] = IntensityOfCrater(distanceToCenter2, craterIntensity, modb);
             }
         }

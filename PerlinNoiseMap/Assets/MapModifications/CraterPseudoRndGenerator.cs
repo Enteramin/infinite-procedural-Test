@@ -54,7 +54,7 @@ public class CraterPseudoRndGenerator {
                 square = Mathf.SmoothStep(triangle, 9f, 1.5f);
 
                 //number shows how big the crater will be
-                distanceToCenter2 = Mathf.Tan(x1 * Mathf.Cos(y1)) / craterSize;
+                distanceToCenter2 = Mathf.Tan(x1 * Mathf.Cos(y1)) / Mathf.Abs(craterSize);
 
                 if (distanceToCenter2 > 1)
                     distanceToCenter2 = 1;

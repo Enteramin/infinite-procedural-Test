@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.3.5f1</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -64,8 +66,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\MapModifications\CraterFalloffGenerator.cs" />
-    <Compile Include="Assets\MapModifications\CraterModification1.cs" />
-    <Compile Include="Assets\MapModifications\CraterModification2.cs" />
+    <Compile Include="Assets\MapModifications\CraterTerrace.cs" />
+    <Compile Include="Assets\MapModifications\CraterCentralPeak.cs" />
     <Compile Include="Assets\MapModifications\CraterPseudoRndGenerator.cs" />
     <Compile Include="Assets\MapModifications\CraterQuadFalloff.cs" />
     <Compile Include="Assets\MapModifications\CraterQuadFalloffGenerator.cs" />
@@ -73,7 +75,6 @@
     <Compile Include="Assets\MapModifications\CraterSidedParable.cs" />
     <Compile Include="Assets\MapModifications\CraterSinW.cs" />
     <Compile Include="Assets\MapModifications\CraterStripes.cs" />
-    <Compile Include="Assets\MapModifications\CraterStripesGenerator.cs" />
     <Compile Include="Assets\Scripts\CraterGenerator.cs" />
     <Compile Include="Assets\Scripts\EndlessTerrain.cs" />
     <Compile Include="Assets\Scripts\FalloffGenerator.cs" />

@@ -5,10 +5,31 @@ using System.Collections.Generic;
 
 public class MapGenerator : MonoBehaviour
 {
-    public enum TypeOfTerrain { own, Earthlike, Moonlike };
+    public enum TypeOfTerrain
+    {
+        own,
+        Earthlike,
+        Moonlike
+    };
     public TypeOfTerrain terrainType;
 
-    public enum DrawMode { NoiseMap, ColourMap, Mesh, FalloffMap, Crater, CraterRing, CraterFalloff, CraterStripes, CraterQuadFalloff, CraterSinW, CraterSidedParable, CraterPseudoRnd, CraterMod1, CraterMod2 };
+    public enum DrawMode
+    {
+        NoiseMap,
+        ColourMap,
+        Mesh,
+        FalloffMap,
+        Crater,
+        CraterRing,
+        CraterFalloff,
+        CraterStripes,
+        CraterQuadFalloff,
+        CraterSinW,
+        CraterSidedParable,
+        CraterPseudoRnd,
+        CraterCentralPeak,
+        CraterTerrace
+    };
     public DrawMode drawMode;
 
     public Noise.NormalizeMode normalizeMode;
@@ -29,6 +50,7 @@ public class MapGenerator : MonoBehaviour
     [Range(0, 100)]
     public int craterProbability;
 
+    [Range(0, 2)]
     public float craterSize;
     [Range(0, 10)] //exponent: everything above or below will crash unity
     public float craterIntensity;
@@ -60,8 +82,8 @@ public class MapGenerator : MonoBehaviour
     float[,] craterSinW;
     float[,] craterSidedParable;
     float[,] craterPseudoRnd;
-    float[,] craterMod1;
-    float[,] craterMod2;
+    float[,] craterCentralPeak;
+    float[,] craterTerrace;
 
     Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
     Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
@@ -109,7 +131,7 @@ public class MapGenerator : MonoBehaviour
         else if (drawMode == DrawMode.CraterFalloff)
         {
             display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterFalloffGenerator.GenerateCraterFalloff(mapChunkSize, craterSize + craters[0].ringWidth + craters[0].falloffstart,
-            craterIntensity + craterSize + craters[0].falloffIntensity, position.x, position.y, ellipse.x, ellipse.y, weightenedAngle, modb)));
+            craterIntensity + craterSize + craters[0].falloffWeight, position.x, position.y, ellipse.x, ellipse.y, weightenedAngle, modb)));
         }
         else if (drawMode == DrawMode.CraterStripes)
         {
@@ -127,22 +149,22 @@ public class MapGenerator : MonoBehaviour
         }
         else if (drawMode == DrawMode.CraterSidedParable)
         {
-            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterSidedParable.GenerateCraterSidedParable(1,2)));
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterSidedParable.GenerateCraterSidedParable(mapChunkSize, craterSize, craterIntensity, modb)));
         }
         else if (drawMode == DrawMode.CraterPseudoRnd)
         {
             display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterPseudoRndGenerator.GenerateCraterPseudoRnd(mapChunkSize, craterSize, craterIntensity, modb)));
         }
-        else if (drawMode == DrawMode.CraterMod1)
+        else if (drawMode == DrawMode.CraterCentralPeak)
         {
             display.DrawTexture(
-                TextureGenerator.TextureFromHeightMap(CraterModification1.GenerateCraterModification1(mapChunkSize, craterSize, craterIntensity,
+                TextureGenerator.TextureFromHeightMap(CraterCentralPeak.GenerateCreaterCentralPeak(mapChunkSize, craterSize, craterIntensity,
                     position.x, position.y, ellipse.x, ellipse.y, weightenedAngle)));
         }
-        else if (drawMode == DrawMode.CraterMod2)
+        else if (drawMode == DrawMode.CraterTerrace)
         {
             display.DrawTexture(
-                TextureGenerator.TextureFromHeightMap(CraterModification2.GenerateCraterModification2(mapChunkSize, craterSize, craterIntensity,
+                TextureGenerator.TextureFromHeightMap(CraterTerrace.GenerateCraterTerrace(mapChunkSize, craterSize, craterIntensity,
                     position.x, position.y, ellipse.x, ellipse.y, weightenedAngle)));
         }
     }
@@ -230,11 +252,11 @@ public class MapGenerator : MonoBehaviour
                     //after test endcomment
                     //noiseMap[x, y] = craterMap[x, y];
 
-                    if (craterRing[x, y] * craters[0].ringIntensity >= 0.8f)
-                        craterRing[x, y] = 0.8f;
+                    //if (craterRing[x, y] * craters[0].ringIntensity >= 0.8f)
+                    //    craterRing[x, y] = 0.8f;
 
-                    if (craterRing[x, y] * craters[0].ringIntensity <= 0.6f)
-                        craterRing[x, y] = 0.6f;
+                    //if (craterRing[x, y] * craters[0].ringIntensity <= 0.6f)
+                    //    craterRing[x, y] = 0.6f;
 
                     //if (craterFalloff[x, y] >= 0.8f)
                     //    craterFalloff[x, y] = 0.8f;
@@ -242,7 +264,12 @@ public class MapGenerator : MonoBehaviour
                     //if (craterFalloff[x, y] <= 0.6f)
                     //    craterFalloff[x, y] = 0.6f;
 
-                    noiseMap[x, y] = craterMap[x, y] + craterFalloff[x,y] - (craterRing[x, y] * craters[0].ringIntensity) - ((craterStripes[x, y] * craters[0].stripeIntensity) - craterMap[x, y]);
+                    //[x, y] = craterMap[x, y] + craterFalloff[x, y] - (craterRing[x, y] * craters[0].ringIntensity) - ((craterStripes[x, y] * craters[0].stripeIntensity) - craterMap[x, y]);
+
+                    if (craterFalloff[x, y] > craters[0].falloffTerrainHeight)
+                        craterFalloff[x, y] = craters[0].falloffTerrainHeight;
+
+                    noiseMap[x, y] = craterMap[x, y] - (craters[0].ringIntensity * craterRing[x,y]) - (craters[0].falloffIntensity*craterFalloff[x,y]);
                 }
                 //while looping through noiseMap. use falloff map
                 else if (craterProbability >= rndFall)
@@ -291,7 +318,7 @@ public class MapGenerator : MonoBehaviour
             craterIntensity + craterSize + craters[0].ringWeight, position.x, position.y, ellipse.x, ellipse.y, weightenedAngle, modb);
 
         craterFalloff = CraterFalloffGenerator.GenerateCraterFalloff(mapChunkSize, craterSize + craters[0].ringWidth + craters[0].falloffstart,
-            craterIntensity + craterSize + craters[0].falloffIntensity, position.x, position.y, ellipse.x, ellipse.y, weightenedAngle, modb);
+            craterIntensity + craterSize + craters[0].falloffWeight, position.x, position.y, ellipse.x, ellipse.y, weightenedAngle, modb);
 
         craterStripes = CraterStripesGenerator.GenerateCraterStripes(mapChunkSize, craterSize, craterIntensity, modb);
 
@@ -299,15 +326,17 @@ public class MapGenerator : MonoBehaviour
 
         craterSinW = CraterSinW.GenerateCraterSinW(mapChunkSize, craterSize, craterIntensity, position.x, position.y, ellipse.x, ellipse.y, modb);
 
-        craterSidedParable = CraterSidedParable.GenerateCraterSidedParable(1, 2);
+        craterSidedParable = CraterSidedParable.GenerateCraterSidedParable(mapChunkSize, craterSize, craterIntensity, modb);
 
         craterPseudoRnd = CraterPseudoRndGenerator.GenerateCraterPseudoRnd(mapChunkSize, craterSize, craterIntensity, modb);
 
-        craterMod1 = CraterModification1.GenerateCraterModification1(mapChunkSize, craterSize, craterIntensity, position.x, position.y, ellipse.x,
+        craterCentralPeak = CraterCentralPeak.GenerateCreaterCentralPeak(mapChunkSize, craterSize, craterIntensity, position.x, position.y, ellipse.x,
             ellipse.y, weightenedAngle);
 
-        craterMod2 = CraterModification2.GenerateCraterModification2(mapChunkSize, craterSize, craterIntensity, position.x, position.y, ellipse.x,
+        craterTerrace = CraterTerrace.GenerateCraterTerrace(mapChunkSize, craterSize, craterIntensity, position.x, position.y, ellipse.x,
             ellipse.y, weightenedAngle);
+
+
 
     }
 
@@ -343,9 +372,12 @@ public struct CraterType
     public float ringWeight;
     public float ringWidth;
     public float ringIntensity;
-    public float stripeIntensity;
     public float falloffstart;
+    public float falloffWeight;
     public float falloffIntensity;
+    public float falloffTerrainHeight;
+    public float stripeIntensity;
+
 }
 
 //Gets the heightMap and Colourmap from the GenerateMapMethod

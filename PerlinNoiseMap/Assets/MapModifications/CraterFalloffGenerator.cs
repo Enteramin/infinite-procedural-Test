@@ -4,7 +4,7 @@ public static class CraterFalloffGenerator
 {
 
     //substracts from noise so landmass is fully sorrounded
-    public static float[,] GenerateCraterFalloff(int chunkSize, float craterSize, float craterIntensity, float posX, float posY, float ellipseX, float ellipseY, bool weightenedAngle, float modb)
+    public static float[,] GenerateCraterFalloff(int chunkSize, float craterSize, float craterIntensity, float posX, float posY, float ellipseX, float ellipseY)
     {
         float[,] map = new float[chunkSize, chunkSize];
 
@@ -31,13 +31,6 @@ public static class CraterFalloffGenerator
                 distanceX = ellipseX * (centerX - posX - i) * (centerX - posX - i);
                 distanceY = ellipseY * (centerY - posY - j) * (centerY - posY - j);
 
-                if (weightenedAngle)
-                {
-                    distanceX = ellipseX * ((j * posX) - i) * ((j * posX) - i);
-                    //j always gets one full chunksize before i has a full one. thats why chunksize must be 
-                    distanceY = ellipseY * (chunkSize - i - j) * (chunkSize - i - j);
-                }
-
                 distanceX /= Mathf.Pow((float)chunkSize * 2, 2);
                 distanceY /= Mathf.Pow((float)chunkSize * 2, 2);
 
@@ -47,24 +40,17 @@ public static class CraterFalloffGenerator
                 //number shows how big the crater will be
                 distanceToCenter2 = distanceToCenter / Mathf.Abs(craterSize);
 
-                //for calculating the other masks: The result of dividing with cratersize cannot exceed 1 at the white area
-                if (distanceToCenter2 > 1)
-                    distanceToCenter2 = 1;
-
-                if (distanceToCenter2 < 0)
-                    distanceToCenter2 = 0;
-
                 //-1 for inverse so low numbers are outside
-                map[i, j] = IntensityOfCrater(distanceToCenter2, craterIntensity, modb);
+                map[i, j] = IntensityOfCrater(distanceToCenter2, craterIntensity);
             }
         }
 
         return map;
     }
 
-    static float IntensityOfCrater(float value, float intensity, float modb)
+    static float IntensityOfCrater(float value, float intensity)
     {
-        return (Mathf.Pow(value, intensity) * value) / value;
+        return Mathf.Clamp01((Mathf.Pow(value, intensity) * value) / value);
     }
 
     static float Fourir(float bob, float a, float b)

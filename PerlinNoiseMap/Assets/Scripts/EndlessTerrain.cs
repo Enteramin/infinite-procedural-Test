@@ -19,7 +19,7 @@ public class EndlessTerrain : MonoBehaviour
     Vector2 viewerPositionOld; //keep track of the viewer position
     static MapGenerator mapGenerator;
     int chunkSize;
-    int chunksVisibleInViewDst;  //chunk LOD
+    int chunksVisibleInViewDst;  //chunk MeshDetails
 
     Dictionary<Vector2, TerrainChunk> terrainChunkDictionary = new Dictionary<Vector2, TerrainChunk>();
     static List<TerrainChunk> terrainChunksVisibleLastUpdate = new List<TerrainChunk>(); //helds the non visible. static so terrain chunks can add it self to that list
@@ -30,7 +30,7 @@ public class EndlessTerrain : MonoBehaviour
 
         maxViewDst = detailLevels[detailLevels.Length - 1].visibleDstThreshold; //last element of detaillevel
         chunkSize = MapGenerator.mapChunkSize - 1;
-        //Brush Size cannot be changed, because LOD needs more chunks to work!
+        //Brush Size cannot be changed, because MeshDetails needs more chunks to work!
         chunksVisibleInViewDst = Mathf.RoundToInt(maxViewDst / chunkSize); //How many chunks are visible
 
 

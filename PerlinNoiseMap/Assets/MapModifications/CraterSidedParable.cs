@@ -3,15 +3,14 @@ using System.Collections;
 
 public class CraterSidedParable {
 
-    public static float[,] GenerateCraterSidedParable(int chunkSize, float craterSize, float moda, float modb)
+    public static float[,] GenerateCraterSidedParable(int chunkSize, float intensity, float parable, int direction)
     {
         //direction: 0 = top, 1 = right, 2 = bottom, 3 = left, 4 = all sides
         float[,] map = new float[chunkSize, chunkSize];
 
         float x;
         float y;
-        float value = 4;
-        int direction = 3; //space holder
+        float value = 0;
 
         //i and j is coordinate of a point inside the square map
         for (int i = 0; i < chunkSize; i++)
@@ -25,22 +24,34 @@ public class CraterSidedParable {
                 //get the value to use for map, find out which one, x or y, is closest to the edge of the square. which one is closer to 1
                 //float value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
 
+                //diagonal,parable
                 if (direction == 0)
-                    value = -y;
+                    value = x*y;
 
+                //square,parable
                 if (direction == 1)
-                    value = -x;
+                    value = Mathf.Sqrt(x * x - y * y);
 
+                //bottom right
                 if (direction == 2)
-                    value = y;
+                    value = x-y;
 
+                //top left
                 if (direction == 3)
-                    value = Mathf.Sqrt(x *x - y*y);
+                    value =x-y;
 
+                //top right
                 if (direction == 4)
-                    value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
+                    value = -y-x;
 
-                map[i, j] = Interpolate(value, moda, modb);
+                //bottom right
+                if (direction == 5)
+                    value = y - x;
+                //bottom left
+                if (direction == 6)
+                    value = y + x;
+
+                map[i, j] = Interpolate(value, parable, intensity);
             }
         }
 
@@ -51,7 +62,7 @@ public class CraterSidedParable {
     static float Interpolate(float value, float moda, float modb)
     {
         // x^a / ( x^a + (b-bx)^a )
-        return Mathf.Pow(value, moda / (Mathf.Pow(value, moda) + Mathf.Pow(modb - modb * value, moda)));
+        return Mathf.Clamp01(Mathf.Pow(value, moda)/modb);
     }
 }
     

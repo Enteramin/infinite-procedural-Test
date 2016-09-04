@@ -4,7 +4,7 @@ public static class CraterStripesGenerator
 {
 
     //substracts from noise so landmass is fully sorrounded
-    public static float[,] GenerateCraterStripes(int chunkSize, float craterSize, float moda, float modb)
+    public static float[,] GenerateCraterStripes(int chunkSize, float intensity, float stripeCount)
     {
         //direction: 0 = top, 1 = right, 2 = bottom, 3 = left, 4 = all sides
         float[,] map = new float[chunkSize, chunkSize];
@@ -47,7 +47,7 @@ public static class CraterStripesGenerator
 
                     //mod a for number of stripes
                     //gewichtet
-                    g2 = (float)Mathf.Atan2(y4, x4) * moda*10;
+                    g2 = (float)Mathf.Atan2(y4, x4) * stripeCount * 10;
 
                     //drehen
                     //g2 += 90;
@@ -80,7 +80,7 @@ public static class CraterStripesGenerator
                 //Radial symetrical sinus curve. Everytime sinus is above 0 the line gets drawn
                 //multiplicating with Sin g2 so values between 0.0 to 1.0 to 0.0 gets drawn too and edges are softer
                 if (Mathf.Sin(g2) > 0)
-                    map[i, j] = (Mathf.Sqrt(f2)) * (modb / 100f) * Mathf.Sin(g2);
+                    map[i, j] = Mathf.Clamp01(Mathf.Sqrt(f2) * (intensity / 100f) * Mathf.Sin(g2));
             }
         }
 

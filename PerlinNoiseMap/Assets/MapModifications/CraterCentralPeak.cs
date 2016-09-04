@@ -4,7 +4,7 @@ public static class CraterCentralPeak
 {
 
     //substracts from noise so landmass is fully sorrounded
-    public static float[,] GenerateCreaterCentralPeak(int chunkSize, float craterSize, float craterIntensity, float posX, float posY, float ellipseX, float ellipseY, bool weightenedAngle)
+    public static float[,] GenerateCreaterCentralPeak(int chunkSize, float craterSize, float craterIntensity, float posX, float posY, float ellipseX, float ellipseY)
     {
         float[,] map = new float[chunkSize, chunkSize];
 
@@ -43,13 +43,6 @@ public static class CraterCentralPeak
                 distanceX = ellipseX * (centerX - posX - i) * (centerX - posX - i);
                 distanceY = ellipseY * (centerY - posY - j) * (centerY - posY - j);
 
-                if (weightenedAngle)
-                {
-                    distanceX = ellipseX * ((j * posX) - i) * ((j * posX) - i);
-                    //j always gets one full chunksize before i has a full one. thats why chunksize must be 
-                    distanceY = ellipseY * (chunkSize - i - j) * (chunkSize - i - j);
-                }
-
                 distanceX /= Mathf.Pow((float)chunkSize * 2, 2);
                 distanceY /= Mathf.Pow((float)chunkSize * 2, 2);
                 // multiplicate for line graph 
@@ -59,11 +52,6 @@ public static class CraterCentralPeak
                 distanceToCenter2 = distanceToCenter / Mathf.Abs(craterSize);
 
                 //for calculating the other masks: The result of dividing with cratersize cannot exceed 1 at the white area
-                if (distanceToCenter2 > 1)
-                    distanceToCenter2 = 1;
-
-                if (distanceToCenter2 < 0)
-                    distanceToCenter2 = 0;
 
                 map[i, j] = IntensityOfCrater(distanceToCenter2, craterIntensity);
             }
@@ -74,7 +62,7 @@ public static class CraterCentralPeak
 
     static float IntensityOfCrater(float value, float intensity)
     {
-        return (Mathf.Pow(value, intensity) * value) / value;
+        return Mathf.Clamp01((Mathf.Pow(value, intensity) * value) / value);
     }
 
     static float Fourir(float bob, float a, float b)

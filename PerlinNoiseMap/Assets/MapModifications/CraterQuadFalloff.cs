@@ -4,7 +4,7 @@ using System.Collections;
 public class CraterQuadFalloffGenerator {
 
     //substracts from noise so landmass is fully sorrounded
-    public static float[,] GenerateCraterQuadFalloff(int chunkSize, float craterSize, float moda, float modb)
+    public static float[,] GenerateCraterQuadFalloff(int chunkSize, float intensity, int direction)
     {
         //direction: 0 = top, 1 = right, 2 = bottom, 3 = left, 4 = all sides
         float[,] map = new float[chunkSize, chunkSize];
@@ -12,7 +12,6 @@ public class CraterQuadFalloffGenerator {
         float x;
         float y;
         float value = 0;
-        int direction = 4; //space holder
 
         //i and j is coordinate of a point inside the square map
         for (int i = 0; i < chunkSize; i++)
@@ -27,7 +26,7 @@ public class CraterQuadFalloffGenerator {
                 //float value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
 
                 if (direction == 0)
-                    value = -y;
+                    value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
 
                 if (direction == 1)
                     value = -x;
@@ -39,9 +38,9 @@ public class CraterQuadFalloffGenerator {
                     value = x;
 
                 if (direction == 4)
-                    value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
+                    value = -y;
 
-                map[i, j] = Interpolate(value, moda, modb);
+                map[i, j] = Interpolate(value, intensity);
             }
         }
 
@@ -49,9 +48,9 @@ public class CraterQuadFalloffGenerator {
     }
 
     //modulates the values so its not linear but a graph
-    static float Interpolate(float value, float moda, float modb)
+    static float Interpolate(float value, float moda)
     {
         // x^a / ( x^a + (b-bx)^a )
-        return Mathf.Pow(value, moda / (Mathf.Pow(value, moda) + Mathf.Pow(modb - modb * value, moda)));
+        return Mathf.Clamp01(Mathf.Pow(value, moda / (Mathf.Pow(value, moda) + Mathf.Pow(1 -value, moda))));
     }
 }

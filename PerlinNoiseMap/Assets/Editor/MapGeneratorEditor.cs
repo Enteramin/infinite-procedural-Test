@@ -26,6 +26,6 @@ public class MapGeneratorEditor : Editor
             mapGen.DrawMapInEditor();
         }
 
-        if (GUILayout.Button("RnDNotYetDone"));
+        if (GUILayout.Button("Randomize!"));
     }
 }

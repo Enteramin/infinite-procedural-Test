@@ -4,7 +4,7 @@ using System.Collections;
 public class CraterPseudoRndGenerator {
 
     //Pseudorandomly sets Dots with sinus functions
-    public static float[,] GenerateCraterPseudoRnd(int chunkSize, float craterSize, float moda, float modb)
+    public static float[,] GenerateCraterPseudoRnd(int chunkSize, float intensity, float moda, float rndVal)
     {
         float[,] map = new float[chunkSize, chunkSize];
 
@@ -45,7 +45,7 @@ public class CraterPseudoRndGenerator {
                 //triangle = Mathf.Abs((float)(2.0 * sawtooth - 1)) * Mathf.Sin(sawtooth);
                 //square = Mathf.SmoothStep(triangle, 9f, 1.5f);
 
-                float x1 = centerX + (distanceToCenter * Mathf.Sin((float)(0.3 * y * Mathf.PI)) + distanceX * Mathf.Tan(distanceX * modb));
+                float x1 = centerX + (distanceToCenter * Mathf.Sin((float)(0.3 * y * Mathf.PI)) + distanceX * Mathf.Tan(distanceX * rndVal));
                 float y1 = (float)(Mathf.Sin((x)) + Mathf.Sin(distanceY));
                 sawtooth = Mathf.Sin(Mathf.Pow(distanceX / distanceY, 1));
 
@@ -54,15 +54,12 @@ public class CraterPseudoRndGenerator {
                 square = Mathf.SmoothStep(triangle, 9f, 1.5f);
 
                 //number shows how big the crater will be
-                distanceToCenter2 = Mathf.Tan(x1 * Mathf.Cos(y1)) / Mathf.Abs(craterSize);
+                distanceToCenter2 = Mathf.Tan(x1 * Mathf.Cos(y1)) / Mathf.Abs(intensity);
 
-                if (distanceToCenter2 > 1)
-                    distanceToCenter2 = 1;
+                //Clamps numbers between 0 to 1 so it can be calculated with other maps
+                distanceToCenter2 = Mathf.Clamp01(distanceToCenter2);
 
-                if (distanceToCenter2 < 0)
-                    distanceToCenter2 = 0;
-
-                map[i, j] = Testering(distanceToCenter2, moda, modb);
+                map[i, j] = Testering(distanceToCenter2, moda, rndVal);
             }
         }
 
@@ -71,7 +68,7 @@ public class CraterPseudoRndGenerator {
 
     static float Testering(float value, float a, float b)
     {
-        return Mathf.Pow(value, a) * Mathf.Sin(value * a) / (Mathf.Pow(value, a) + Mathf.Pow(b - b * value, a));
+        return Mathf.Clamp01(Mathf.Pow(value, a) * Mathf.Sin(value * a) / (Mathf.Pow(value, a) + Mathf.Pow(b - b * value, a)));
     }
 
     //modulates the values so its not linear but a graph

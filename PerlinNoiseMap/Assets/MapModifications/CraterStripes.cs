@@ -2,7 +2,6 @@
 
 public static class CraterStripesGenerator
 {
-
     //substracts from noise so landmass is fully sorrounded
     public static float[,] GenerateCraterStripes(int chunkSize, float intensity, float stripeCount)
     {

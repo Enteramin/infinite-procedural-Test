@@ -8,6 +8,7 @@ public class MapGenerator : MonoBehaviour
     public enum DrawMode
     {
         NoiseMap,
+        MixedHeightMap,
         ColourMap,
         Mesh,
         Crater,
@@ -31,6 +32,8 @@ public class MapGenerator : MonoBehaviour
 
     public float meshHeightMultiplier;
     public AnimationCurve meshHeightCurve;
+    [Range(0,1f)]
+    public float terrainHeight;
     public bool cleanChunks;
     public bool isFlatshaded;
 
@@ -110,6 +113,10 @@ public class MapGenerator : MonoBehaviour
         MapDisplay display = FindObjectOfType<MapDisplay>(); //reference to mapdisplay, gives different options
         if (drawMode == DrawMode.NoiseMap)
         {
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(Noise.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale, octaves, persistance, lacunarity, Vector2.zero + offset, normalizeMode)));
+        }
+        if (drawMode == DrawMode.MixedHeightMap)
+        {
             display.DrawTexture(TextureGenerator.TextureFromHeightMap(mapData.heightMap));
         }
         else if (drawMode == DrawMode.ColourMap)
@@ -168,7 +175,7 @@ public class MapGenerator : MonoBehaviour
         }
         else if (drawMode == DrawMode.CraterPseudoRnd)
         {
-            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterPseudoRndGenerator.GenerateCraterPseudoRnd(mapChunkSize, craterSize, craterIntensity, NoiseIntensity)));
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterPseudoRndGenerator.GenerateCraterPseudoRnd(mapChunkSize, craters[0].pseudoDensity, craters[0].pseudoPeaks, craters[0].pseudoVal)));
         }
     }
 
@@ -249,41 +256,50 @@ public class MapGenerator : MonoBehaviour
         Color[] colourMap = new Color[(mapChunkSize + 2) * (mapChunkSize + 2)];
         for (int y = 0; y < mapChunkSize; y++)
         {
-
             for (int x = 0; x < mapChunkSize; x++)
             {
+                float ringMask = Mathf.Clamp01(craters[0].ringIntensity * craterRing[x, y]);
+                float falloffMask = Mathf.Clamp01(craters[0].falloffIntensity * craterFalloff[x, y]);
+                float stripeMask = Mathf.Clamp01(craters[0].stripeIntensity * craterStripes[x, y] - craterRing[x, y] * craters[0].stripeWidth);
+                float sinusMask = Mathf.Clamp01(craters[0].sinWIntensity * craterSinW[x, y] - craterRing[x, y] * craters[0].sinWWidth);
+                float lineMask = Mathf.Clamp01((craters[0].lineIntensity * (craterQuadFalloff[x, y] - craterFalloff[x, y] * 10)));
+                float centralMask =
+                    Mathf.Clamp01(-(craterCentralPeak[x, y] - 1) - (craterMap[x, y] - sinusMask) * craters[0].centralIntensity);
+                float terraceMask = Mathf.Clamp01((((craterTerrace[x, y])) - craterMap[x, y]) * craters[0].terraceIntensity);
+                float pseudoMask = Mathf.Clamp01(craters[0].pseudoIntensity*craterPseudoRnd[x, y]);
+
+                    if (falloffMask > terrainHeight)
+                        falloffMask = terrainHeight;
+
+                    if (centralMask > craters[0].centralHeight)
+                        centralMask = craters[0].centralHeight;
+
+                    if (terraceMask > craters[0].terraceHeight)
+                        terraceMask = craters[0].terraceHeight;
+
+                //if(Mathf.Clamp01(-(craterTerrace[x, y] - 1) - (craterMap[x, y]) * craters[0].terraceIntensity) > craters[0].terraceHeight)
+                //    craterMap[x, y] = craters[0].terraceHeight;
+
+                //map[x, y] = craterMap[x, y] -
+                //            Mathf.Clamp01(craters[0].ringIntensity*craterRing[x, y]) -
+                //            Mathf.Clamp01(craters[0].falloffIntensity*craterFalloff[x, y]) -
+                //Mathf.Clamp01(craters[0].stripeIntensity*craterStripes[x, y] - craterRing[x, y]*craters[0].stripeWidth) +
+                //Mathf.Clamp01(craters[0].sinWIntensity*craterSinW[x, y] - craterRing[x, y]*craters[0].sinWWidth) +
+                //Mathf.Clamp01((craters[0].lineIntensity*craterQuadFalloff[x, y] - craterFalloff[x, y]*10)) +
+                //Mathf.Clamp01((-(craterCentralPeak[x, y] - 1) - (craterMap[x, y]) * craters[0].centralIntensity));
+                //Mathf.Clamp01((-(craterTerrace[x, y])-1) - (craterMap[x, y]) * craters[0].terraceIntensity);
+
+                //terrainheight if cant be changed so terrainHeight has to be changed here
+                map[x, y] = (-(terrainHeight) + 1) + Mathf.Abs(noiseMap[x, y] / 100 * NoiseIntensity);
+
                 if (cleanChunks)
                 {
-                    float ringMask = Mathf.Clamp01(craters[0].ringIntensity*craterRing[x, y]);
-                    float falloffMask = Mathf.Clamp01(craters[0].falloffIntensity*craterFalloff[x, y]);
-                    float stripeMask = Mathf.Clamp01(craters[0].stripeIntensity*craterStripes[x, y] - craterRing[x, y]*craters[0].stripeWidth);
-                    float sinusMask = Mathf.Clamp01(craters[0].sinWIntensity*craterSinW[x, y] - craterRing[x, y]*craters[0].sinWWidth);
-                    float lineMask = Mathf.Clamp01((craters[0].lineIntensity*craterQuadFalloff[x, y] - craterFalloff[x, y]*10));
-                    float centralMask =
-                        Mathf.Clamp01(-(craterCentralPeak[x, y] - 1) - (craterMap[x, y] - craterSinW[x, y])*craters[0].centralIntensity);
-
-                    if (craterFalloff[x, y] > craters[0].falloffTerrainHeight)
-                        craterFalloff[x, y] = craters[0].falloffTerrainHeight;
-
-                    if (Mathf.Clamp01((-(craterCentralPeak[x, y] - 1) - (craterMap[x, y])*craters[0].centralIntensity)) > craters[0].centralHeight)
-                        craterMap[x, y] = craters[0].centralHeight;
-
-                    //if(Mathf.Clamp01(-(craterTerrace[x, y] - 1) - (craterMap[x, y]) * craters[0].terraceIntensity) > craters[0].terraceHeight)
-                    //    craterMap[x, y] = craters[0].terraceHeight;
-
-                    map[x, y] = craterMap[x, y] -
-                                Mathf.Clamp01(craters[0].ringIntensity*craterRing[x, y]) -
-                                Mathf.Clamp01(craters[0].falloffIntensity*craterFalloff[x, y]) -
-                                Mathf.Clamp01(craters[0].stripeIntensity*craterStripes[x, y] - craterRing[x, y]*craters[0].stripeWidth) -
-                                Mathf.Clamp01(craters[0].sinWIntensity*craterSinW[x, y] - craterRing[x, y]*craters[0].sinWWidth) +
-                                Mathf.Clamp01((craters[0].lineIntensity*craterQuadFalloff[x, y] - craterFalloff[x, y]*10)) +
-                                Mathf.Clamp01(-(craterCentralPeak[x, y] - 1) - (craterMap[x, y] - craterSinW[x, y])*craters[0].centralIntensity);
-                    //Mathf.Clamp01((-(craterTerrace[x, y])-1) - (craterMap[x, y]) * craters[0].terraceIntensity);
+                    map[x, y] = craterMap[x, y] - ringMask - falloffMask - stripeMask + sinusMask + lineMask + centralMask - terraceMask - pseudoMask;
                 }
                 //while looping through noiseMap. use falloff map
                 else if (craterProbability >= rndFall)
                 {
-                    map[x, y] = (craterMap[x, y] - noiseMap[x, y]);
+                    map[x, y] = (craterMap[x, y] - ringMask - falloffMask - stripeMask + sinusMask + lineMask + centralMask - terraceMask) + Mathf.Abs(noiseMap[x, y] / 100 * NoiseIntensity);
                 }
                 float currentHeight = map[x, y];
                 for (int i = 0; i < rockLevels.Length; i++)
@@ -339,7 +355,7 @@ public class MapGenerator : MonoBehaviour
         craterTerrace = CraterTerrace.GenerateCraterTerrace(mapChunkSize, craters[0].terraceSize, craters[0].terracePeakness, position.x + craters[0].terracePosition.x, position.y + craters[0].terracePosition.y, ellipse.x,
             ellipse.y);
 
-        craterPseudoRnd = CraterPseudoRndGenerator.GenerateCraterPseudoRnd(mapChunkSize, craterSize, craterIntensity, NoiseIntensity);
+        craterPseudoRnd = CraterPseudoRndGenerator.GenerateCraterPseudoRnd(mapChunkSize, craters[0].pseudoDensity, craters[0].pseudoPeaks, craters[0].pseudoVal);
     }
 
     //Holds callback data and Mapdata info. Make it Generic <T> so it can handle both mesh data and mapdata
@@ -379,7 +395,6 @@ public struct CraterType
     public float falloffstart;
     public float falloffWeight;
     public float falloffIntensity;
-    public float falloffTerrainHeight;
     [Header("Stripes")]
     [Range(0,0.5f)]
     public float stripeIntensity;
@@ -402,6 +417,7 @@ public struct CraterType
     public float diagParable;
     [Header("Central Peak")]
     public float centralIntensity;
+    [Range(0, 100)]
     public float centralNoise;
     public float centralHeight;
     public float centralSize;
@@ -409,11 +425,17 @@ public struct CraterType
     public Vector2 centralPosition;
     [Header("Terrace")]
     public float terraceIntensity;
+    [Range(0,100)]
     public float terraceNoise;
     public float terraceHeight;
     public float terraceSize;
     public float terracePeakness;
     public Vector2 terracePosition;
+    [Header("Brittleness")]
+    public float pseudoIntensity;
+    public float pseudoPeaks;
+    public float pseudoDensity;
+    public float pseudoVal;
 }
 
 //Gets the heightMap and Colourmap from the GenerateMapMethod

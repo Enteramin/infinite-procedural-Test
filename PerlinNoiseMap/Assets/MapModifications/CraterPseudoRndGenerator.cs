@@ -4,7 +4,7 @@ using System.Collections;
 public class CraterPseudoRndGenerator {
 
     //Pseudorandomly sets Dots with sinus functions
-    public static float[,] GenerateCraterPseudoRnd(int chunkSize, float intensity, float moda, float rndVal)
+    public static float[,] GenerateCraterPseudoRnd(int chunkSize, float intensity, float density, float rndVal)
     {
         float[,] map = new float[chunkSize, chunkSize];
 
@@ -59,7 +59,7 @@ public class CraterPseudoRndGenerator {
                 //Clamps numbers between 0 to 1 so it can be calculated with other maps
                 distanceToCenter2 = Mathf.Clamp01(distanceToCenter2);
 
-                map[i, j] = Testering(distanceToCenter2, moda, rndVal);
+                map[i, j] = Testering(distanceToCenter2, density, rndVal);
             }
         }
 

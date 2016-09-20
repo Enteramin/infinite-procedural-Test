@@ -3,67 +3,66 @@
 public static class MeshGenerator
 {
 
-    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail, bool isFlatshaded)
+    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve heightCurveDiag, int levelOfDetail)
     {
-        AnimationCurve heightCurve = new AnimationCurve(_heightCurve.keys); //solves the problem with threadening. each curve has its own height curve
+        AnimationCurve heightCurve = new AnimationCurve(heightCurveDiag.keys); //solves the problem with threadening. each curve has its own height curve
 
-        int meshSimplificationIncrement = (levelOfDetail == 0) ? 1 : levelOfDetail * 2; //if LOD = 0 meshsimplificationIncrement = 1
+        int meshSimplifierIncrement = (levelOfDetail == 0) ? 1 : levelOfDetail * 2; //if LOD = 0 meshsimplificationIncrement = 1
 
-        int borderedSize = heightMap.GetLength(0); //width and heigth dont needed, because we work with squares
-        int meshSize = borderedSize - 2 * meshSimplificationIncrement; //so borders are even correct for lower LOD chunks
-        int meshSizeUnsimplified = borderedSize - 2; //bordersize is always 2 points bigger than the meshsize. example 3 points edge has 5 points edge border
+        int borderSize = heightMap.GetLength(0); //width and heigth dont needed, because we work with squares
+        int meshSize = borderSize - 2 * meshSimplifierIncrement; //so borders are even correct for lower LOD chunks
+        int meshSizeUnsimpled = borderSize - 2; //bordersize is always 2 points bigger than the meshsize. example 3 points edge has 5 points edge border
 
-        float topLeftX = (meshSizeUnsimplified - 1) / -2f; //centers the mesh in the screen. x in the middle has 0, left has -1 and right 1. for the left one: x=(w-1)/2: meshSizeUnsimplified - 1 so its not dependend on the LOD of Mesh and remains constant
-        float topLeftZ = (meshSizeUnsimplified - 1) / 2f;
-
-
-        int verticesPerLine = (meshSize - 1) / meshSimplificationIncrement + 1;
+        float topLeftX = (meshSizeUnsimpled - 1) / -2f; //centers the mesh in the screen. x in the middle has 0, left has -1 and right 1. for the left one: x=(w-1)/2: meshSizeUnsimplified - 1 so its not dependend on the LOD of Mesh and remains constant
+        float topLeftZ = (meshSizeUnsimpled - 1) / 2f;
+        
+        int verticesPerLine = (meshSize - 1) / meshSimplifierIncrement + 1;
 
         MeshData meshData = new MeshData(verticesPerLine);
 
-        int[,] vertexIndicesMap = new int[borderedSize, borderedSize];  //creates 2D array of bordersize. example -1 to -16
+        int[,] verticesIndicesMap = new int[borderSize, borderSize];  //creates 2D array of bordersize. example -1 to -16
         int meshVertexIndex = 0;
         int borderVertexIndex = -1;
 
         //creates the borderindex as -1 and so on vertices
-        for (int y = 0; y < borderedSize; y += meshSimplificationIncrement)
+        for (int y = 0; y < borderSize; y += meshSimplifierIncrement)
         {
-            for (int x = 0; x < borderedSize; x += meshSimplificationIncrement)
+            for (int x = 0; x < borderSize; x += meshSimplifierIncrement)
             {
-                bool isBorderVertex = y == 0 || y == borderedSize - 1 || x == 0 || x == borderedSize - 1;
+                bool isBorderVertex = y == 0 || y == borderSize - 1 || x == 0 || x == borderSize - 1;
 
                 if (isBorderVertex)
                 {
-                    vertexIndicesMap[x, y] = borderVertexIndex;
+                    verticesIndicesMap[x, y] = borderVertexIndex;
                     borderVertexIndex--;
                 }
                 else
                 {
-                    vertexIndicesMap[x, y] = meshVertexIndex;
+                    verticesIndicesMap[x, y] = meshVertexIndex;
                     meshVertexIndex++;
                 }
             }
         }
 
         //for loops keeps track where we are at the 1D array of vertices
-        for (int y = 0; y < borderedSize; y += meshSimplificationIncrement)
+        for (int y = 0; y < borderSize; y += meshSimplifierIncrement)
         {
-            for (int x = 0; x < borderedSize; x += meshSimplificationIncrement)
+            for (int x = 0; x < borderSize; x += meshSimplifierIncrement)
             {
-                int vertexIndex = vertexIndicesMap[x, y];
-                Vector2 percent = new Vector2((x - meshSimplificationIncrement) / (float)meshSize, (y - meshSimplificationIncrement) / (float)meshSize);
+                int vertexIndex = verticesIndicesMap[x, y];
+                Vector2 percent = new Vector2((x - meshSimplifierIncrement) / (float)meshSize, (y - meshSimplifierIncrement) / (float)meshSize);
                 float height = heightCurve.Evaluate(heightMap[x, y]) * heightMultiplier;
-                Vector3 vertexPosition = new Vector3(topLeftX + percent.x * meshSizeUnsimplified, height, topLeftZ - percent.y * meshSizeUnsimplified); //x in the middle has 0, left has -1 and right 1. 
+                Vector3 vertexPosition = new Vector3(topLeftX + percent.x * meshSizeUnsimpled, height, topLeftZ - percent.y * meshSizeUnsimpled); //x in the middle has 0, left has -1 and right 1. 
 
                 meshData.AddVertex(vertexPosition, percent, vertexIndex); //call the addvertex method on the mesh data for borders
 
-                if (x < borderedSize - 1 && y < borderedSize - 1) // -1 ignores the right and bottom edge vertices of the map to stay inside
+                if (x < borderSize - 1 && y < borderSize - 1) // -1 ignores the right and bottom edge vertices of the map to stay inside
                 {
                     //goes through vertices and makes a triangle out of them. i, i+w, i+w+1 (first triangle), i, i+1, i+w+1 (second triangle)
-                    int a = vertexIndicesMap[x, y]; // x;y
-                    int b = vertexIndicesMap[x + meshSimplificationIncrement, y]; // x+i;y
-                    int c = vertexIndicesMap[x, y + meshSimplificationIncrement]; // x;y+i
-                    int d = vertexIndicesMap[x + meshSimplificationIncrement, y + meshSimplificationIncrement]; //x+i;y+i
+                    int a = verticesIndicesMap[x, y]; // x;y
+                    int b = verticesIndicesMap[x + meshSimplifierIncrement, y]; // x+i;y
+                    int c = verticesIndicesMap[x, y + meshSimplifierIncrement]; // x;y+i
+                    int d = verticesIndicesMap[x + meshSimplifierIncrement, y + meshSimplifierIncrement]; //x+i;y+i
                      //creating 2 triangles aout of abcd.
                     meshData.AddTriangle(a, d, c);
                     meshData.AddTriangle(d, a, b);
@@ -71,11 +70,6 @@ public static class MeshGenerator
 
                 vertexIndex++; //keeps track where index is for vertices
             }
-        }
-
-        if (isFlatshaded)
-        {
-            MeshData.RecalculateFlatShadedMeshData(meshData);
         }
 
         return meshData; //meshdata instead of Mesh so threating can implemented
@@ -110,15 +104,15 @@ public class MeshData
     }
     
     //because vertices or uvs cant be add directly, this method needed
-    public void AddVertex(Vector3 vertexPosition, Vector2 uv, int vertexIndex)
+    public void AddVertex(Vector3 vertexPos, Vector2 uv, int vertexIndex)
     {
         if (vertexIndex < 0) // less than zero = borderVertex
         {
-            borderVertices[-vertexIndex - 1] = vertexPosition; //add to borderindex array. to get an appropiate index, start with -1
+            borderVertices[-vertexIndex - 1] = vertexPos; //add to borderindex array. to get an appropiate index, start with -1
         }
         else //otherwise its a regular vertex
         {
-            vertices[vertexIndex] = vertexPosition;
+            vertices[vertexIndex] = vertexPos;
             uvs[vertexIndex] = uv;
         }
     }
@@ -149,18 +143,18 @@ public class MeshData
         //when generating the mesh junk we also calculate the vertices bordering the mesh. this border will be excluded from the final mesh. its only there to help calculating the mesh. the border goes from -1 downwards. example 3x3 mesh has -1 to -16 border points. every index less than 0 will be excluded from the final mesh
         //bordersize is always 2 points bigger than the meshsize. example 3 points edge has 5 points edge border
         Vector3[] vertexNormals = new Vector3[vertices.Length]; //store the normals in it
-        int triangleCount = triangles.Length / 3; //how many triangles we have. triangles array has a set of 3 vertices so / 3
-        for (int i = 0; i < triangleCount; i++)
+        int triangleNrCount = triangles.Length / 3; //how many triangles we have. triangles array has a set of 3 vertices so / 3
+        for (int i = 0; i < triangleNrCount; i++)
         {
             int normalTriangleIndex = i * 3; //gets index in triangles array
             int vertexIndexA = triangles[normalTriangleIndex]; //gets the indices of all of the vertices, that make up the current triangle
             int vertexIndexB = triangles[normalTriangleIndex + 1];
             int vertexIndexC = triangles[normalTriangleIndex + 2];
 
-            Vector3 triangleNormal = SurfaceNormalFromIndices(vertexIndexA, vertexIndexB, vertexIndexC); //gets the normal vector of the 3 vertices indeces
-            vertexNormals[vertexIndexA] += triangleNormal; //add the triangle normal to each of the vertices that are part of the triangle
-            vertexNormals[vertexIndexB] += triangleNormal;
-            vertexNormals[vertexIndexC] += triangleNormal;
+            Vector3 triangleNormals = SurfaceNormalFromIndices(vertexIndexA, vertexIndexB, vertexIndexC); //gets the normal vector of the 3 vertices indeces
+            vertexNormals[vertexIndexA] += triangleNormals; //add the triangle normal to each of the vertices that are part of the triangle
+            vertexNormals[vertexIndexB] += triangleNormals;
+            vertexNormals[vertexIndexC] += triangleNormals;
             //after that lightning works but still seams. to get fully rid of the seams look bellow
         }
 
@@ -222,30 +216,6 @@ public class MeshData
         mesh.uv = uvs;
         mesh.normals = CalculateNormals(); //anti seam 
         return mesh;
-    }
-
-    //Increasing LOD to 6 is recomended
-    //Flash Shading is limited to 105 Chunks because of the 65000 Vertices Limitation. 
-    public static void RecalculateFlatShadedMeshData(MeshData meshData)
-    {
-        Vector3[] oldVerts = meshData.vertices;
-        Vector2[] oldUvs = meshData.uvs;
-        int[] triangles = meshData.triangles;
-
-
-        Vector3[] vertices = new Vector3[triangles.Length];
-        Vector2[] uvs = new Vector2[triangles.Length];
-
-        for (int i = 0; i < triangles.Length; i++)
-        {
-            vertices[i] = oldVerts[triangles[i]];
-            uvs[i] = oldUvs[triangles[i]];
-            triangles[i] = i;
-        }
-
-        meshData.vertices = vertices;
-        meshData.triangles = triangles;
-        meshData.uvs = uvs;
     }
 
 }

@@ -15,7 +15,6 @@ public static class CraterSinW
 
         //float ellipseX, float ellipseY, bool weightenedAngle
         float distanceToCenter;
-        float distanceToCenter2;
 
         //float distanceToCenter;
         //i and j is coordinate of a point inside the square map
@@ -24,8 +23,8 @@ public static class CraterSinW
             for (int j = 0; j < chunkSize; j++)
             {
 
-                float x = i / (float)chunkSize * 2 - 1;
-                float y = j / (float)chunkSize * 2 - 1;
+                //float x = i / (float)chunkSize * 2 - 1;
+                //float y = j / (float)chunkSize * 2 - 1;
 
                 //one of them mult with 20 for ellipse
                 distanceX = ellipseX * (centerX - posX - i) * (centerX - posX - i);

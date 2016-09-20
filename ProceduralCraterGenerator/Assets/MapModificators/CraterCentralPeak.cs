@@ -20,9 +20,6 @@ public static class CraterCentralPeak
         float distanceToCenter;
         float distanceToCenter2;
 
-        float x1;
-        float y2;
-
         //float distanceToCenter;
         //i and j is coordinate of a point inside the square map
         for (int i = 0; i < chunkSize; i++)
@@ -36,8 +33,8 @@ public static class CraterCentralPeak
                 //distanceX = ellipseX * x1 * x1;
                 //distanceY = ellipseY * y2 * y2;
 
-                float x = i / (float)chunkSize * 2 - 1;
-                float y = j / (float)chunkSize * 2 - 1;
+                //float x = i / (float)chunkSize * 2 - 1;
+                //float y = j / (float)chunkSize * 2 - 1;
 
                 //one of them mult with 20 for ellipse
                 distanceX = ellipseX * (centerX - posX - i) * (centerX - posX - i);

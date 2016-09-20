@@ -17,9 +17,7 @@ public class CraterPseudoRndGenerator {
         float distanceToCenter;
         float distanceToCenter2;
 
-        float sawtooth;
-        float triangle;
-        float square;
+        //float square;
 
         //float distanceToCenter;
 
@@ -37,7 +35,7 @@ public class CraterPseudoRndGenerator {
                 distanceY = (centerY - j) * (centerY - j);
 
                 // Oval
-                float g = 10 * (centerY - j) * (centerY - j);
+                //float g = 10 * (centerY - j) * (centerY - j);
 
                 distanceToCenter = Mathf.Sqrt(distanceX + distanceY);
 
@@ -47,11 +45,11 @@ public class CraterPseudoRndGenerator {
 
                 float x1 = centerX + (distanceToCenter * Mathf.Sin((float)(0.3 * y * Mathf.PI)) + distanceX * Mathf.Tan(distanceX * rndVal));
                 float y1 = (float)(Mathf.Sin((x)) + Mathf.Sin(distanceY));
-                sawtooth = Mathf.Sin(Mathf.Pow(distanceX / distanceY, 1));
+                //sawtooth = Mathf.Sin(Mathf.Pow(distanceX / distanceY, 1));
 
-                sawtooth = Mathf.Pow(distanceToCenter, 1);
-                triangle = Mathf.Abs((float)(2.0 * sawtooth - 1)) * Mathf.Sin(sawtooth);
-                square = Mathf.SmoothStep(triangle, 9f, 1.5f);
+                //sawtooth = Mathf.Pow(distanceToCenter, 1);
+                //triangle = Mathf.Abs((float)(2.0 * sawtooth - 1)) * Mathf.Sin(sawtooth);
+                //square = Mathf.SmoothStep(triangle, 9f, 1.5f);
 
                 //number shows how big the crater will be
                 distanceToCenter2 = Mathf.Tan(x1 * Mathf.Cos(y1)) / Mathf.Abs(intensity);

@@ -5,7 +5,7 @@ public static class TextureGenerator
 {
 
     //Create a Texture of 1D ColorMap
-    public static Texture2D TextureFromColourMap(Color[] colourMap, int width, int height)
+    public static Texture2D ColourMapTexture(Color[] colourMap, int width, int height)
     {
         Texture2D texture = new Texture2D(width, height);
         texture.filterMode = FilterMode.Point; //Point = takes bluriness for well defined blocks
@@ -31,7 +31,7 @@ public static class TextureGenerator
             }
         }
 
-        return TextureFromColourMap(colourMap, width, height);
+        return ColourMapTexture(colourMap, width, height);
     }
 
 }

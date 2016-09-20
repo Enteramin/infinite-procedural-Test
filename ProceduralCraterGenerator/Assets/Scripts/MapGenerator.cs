@@ -24,7 +24,7 @@ public class MapGenerator : MonoBehaviour
     };
     public DrawMode drawMode;
 
-    public Noise.NormalizeMode normalizeMode;
+    public NoiseGenerator.NormalizeMode normalizeMode;
 
     public const int mapChunkSize = 239; //less than 255^2: w-1 = 240: 240 has properties of 2,4,6,8,10,12: -2 because of border vertices
     [Range(0, 6)] //makes it to slider
@@ -35,9 +35,8 @@ public class MapGenerator : MonoBehaviour
     [Range(0,1f)]
     public float terrainHeight;
     public bool cleanChunks;
-    public bool isFlatshaded;
 
-    [Header("Perlin Noise Settings")]
+    [Header("Perlin NoiseGenerator Settings")]
     public float noiseScale;
 
     public int octaves;
@@ -102,8 +101,8 @@ public class MapGenerator : MonoBehaviour
     
     public bool autoUpdate;
 
-    Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
-    Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
+    Queue<MapThreadInfo<MapData>> mapDataThreadInfoQueueNr = new Queue<MapThreadInfo<MapData>>();
+    Queue<MapThreadInfo<MeshData>> meshDataThreadInfoQueueNr = new Queue<MapThreadInfo<MeshData>>();
 
     //use FallowMap
     void Awake()
@@ -119,7 +118,7 @@ public class MapGenerator : MonoBehaviour
         MapDisplay display = FindObjectOfType<MapDisplay>(); //reference to mapdisplay, gives different options
         if (drawMode == DrawMode.NoiseMap)
         {
-            display.DrawTexture(TextureGenerator.TextureFromHeightMap(Noise.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale, octaves, persistance, lacunarity, Vector2.zero + offset, normalizeMode)));
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(NoiseGenerator.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale, octaves, persistance, lacunarity, Vector2.zero + offset, normalizeMode)));
         }
         if (drawMode == DrawMode.MixedHeightMap)
         {
@@ -127,12 +126,12 @@ public class MapGenerator : MonoBehaviour
         }
         else if (drawMode == DrawMode.ColourMap)
         {
-            display.DrawTexture(TextureGenerator.TextureFromColourMap(mapData.colourMap, mapChunkSize, mapChunkSize));
+            display.DrawTexture(TextureGenerator.ColourMapTexture(mapData.colourMap, mapChunkSize, mapChunkSize));
         }
         else if (drawMode == DrawMode.Mesh)
         {
-            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, MeshDetails, isFlatshaded),
-                TextureGenerator.TextureFromColourMap(mapData.colourMap, mapChunkSize, mapChunkSize));
+            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, MeshDetails),
+                TextureGenerator.ColourMapTexture(mapData.colourMap, mapChunkSize, mapChunkSize));
         }
         else if (drawMode == DrawMode.Crater)
         {
@@ -200,9 +199,9 @@ public class MapGenerator : MonoBehaviour
     void MapDataThread(Vector2 centre, Action<MapData> callback)
     {
         MapData mapData = GenerateMapData(centre);
-        lock (mapDataThreadInfoQueue) //lock: so no other thread cann access this thread
+        lock (mapDataThreadInfoQueueNr) //lock: so no other thread cann access this thread
         {
-            mapDataThreadInfoQueue.Enqueue(new MapThreadInfo<MapData>(callback, mapData));
+            mapDataThreadInfoQueueNr.Enqueue(new MapThreadInfo<MapData>(callback, mapData));
         }
     }
 
@@ -219,29 +218,29 @@ public class MapGenerator : MonoBehaviour
     //Gets the Height Map from GeneratteTerrainmesh
     void MeshDataThread(MapData mapData, int lod, Action<MeshData> callback)
     {
-        MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod, isFlatshaded);
-        lock (meshDataThreadInfoQueue)
+        MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod);
+        lock (meshDataThreadInfoQueueNr)
         {
-            meshDataThreadInfoQueue.Enqueue(new MapThreadInfo<MeshData>(callback, meshData));
+            meshDataThreadInfoQueueNr.Enqueue(new MapThreadInfo<MeshData>(callback, meshData));
         }
     }
 
     void Update()
     {
-        if (mapDataThreadInfoQueue.Count > 0) //as long there are threads
+        if (mapDataThreadInfoQueueNr.Count > 0) //as long there are threads
         {
-            for (int i = 0; i < mapDataThreadInfoQueue.Count; i++)
+            for (int i = 0; i < mapDataThreadInfoQueueNr.Count; i++)
             {
-                MapThreadInfo<MapData> threadInfo = mapDataThreadInfoQueue.Dequeue(); //Dequeue: the next thing in the queue
+                MapThreadInfo<MapData> threadInfo = mapDataThreadInfoQueueNr.Dequeue(); //Dequeue: the next thing in the queue
                 threadInfo.callback(threadInfo.parameter);
             }
         }
 
-        if (meshDataThreadInfoQueue.Count > 0)
+        if (meshDataThreadInfoQueueNr.Count > 0)
         {
-            for (int i = 0; i < meshDataThreadInfoQueue.Count; i++)
+            for (int i = 0; i < meshDataThreadInfoQueueNr.Count; i++)
             {
-                MapThreadInfo<MeshData> threadInfo = meshDataThreadInfoQueue.Dequeue();
+                MapThreadInfo<MeshData> threadInfo = meshDataThreadInfoQueueNr.Dequeue();
                 threadInfo.callback(threadInfo.parameter);
             }
         }
@@ -251,9 +250,9 @@ public class MapGenerator : MonoBehaviour
     {
         float[,] map = new float[mapChunkSize + 2, mapChunkSize + 2];
 
-        //fetching 2D NoiseMap from the Noise Class
+        //fetching 2D NoiseMap from the NoiseGenerator Class
         // +2 for the border vertices. generates 1 extra noise value on left and right side
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, normalizeMode);
+        float[,] noiseMask = NoiseGenerator.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, normalizeMode);
         
         System.Random rnd = new System.Random(); //Random percentage to get a crater
         int rndFall = rnd.Next(0, 100);
@@ -296,7 +295,7 @@ public class MapGenerator : MonoBehaviour
                 //Mathf.Clamp01((-(craterTerrace[x, y])-1) - (craterMap[x, y]) * craters[0].terraceIntensity);
 
                 //terrainheight if cant be changed so terrainHeight has to be changed here
-                map[x, y] = (-(terrainHeight) + 1) + Mathf.Abs(noiseMap[x, y] / 100 * NoiseIntensity) - pseudoMask;
+                map[x, y] = (-(terrainHeight) + 1) + Mathf.Abs(noiseMask[x, y] / 100 * NoiseIntensity) - pseudoMask;
 
                 if (cleanChunks)
                 {
@@ -305,7 +304,7 @@ public class MapGenerator : MonoBehaviour
                 //while looping through noiseMap. use falloff map
                 else if (craterProbability >= rndFall)
                 {
-                    map[x, y] = (craterMap[x, y] - ringMask - falloffMask - stripeMask + sinusMask + lineMask + centralMask - terraceMask - pseudoMask) + Mathf.Abs(noiseMap[x, y] / 100 * NoiseIntensity);
+                    map[x, y] = (craterMap[x, y] - ringMask - falloffMask - stripeMask + sinusMask + lineMask + centralMask - terraceMask - pseudoMask) + Mathf.Abs(noiseMask[x, y] / 100 * NoiseIntensity);
                 }
                 float currentHeight = map[x, y];
                 for (int i = 0; i < rockLevels.Length; i++)
@@ -494,13 +493,13 @@ public struct MapData
 //Threadening
 /*
 spread the calculation of the map data and the mash data over multiple frames.
-EndlessTerrain will gets Mapgenerator data. But it wont get immediately because its generated over multiple frames
+InfiniteTerrain will gets Mapgenerator data. But it wont get immediately because its generated over multiple frames
 
     MapGenerator: RequestMapdata will take Action<MapData>callback
     2. MapDataThread: add mapData + callback queue. 
     3. outside of the method in the update methode, for(queue. Count>0) as long item is in the queue we call map data
 
-    EndlessTerrain: RequestMapData(OnMapDataReceived
+    InfiniteTerrain: RequestMapData(OnMapDataReceived
 
 
 */

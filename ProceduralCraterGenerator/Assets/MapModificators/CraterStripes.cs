@@ -8,9 +8,9 @@ public static class CraterStripesGenerator
         //direction: 0 = top, 1 = right, 2 = bottom, 3 = left, 4 = all sides
         float[,] map = new float[chunkSize, chunkSize];
 
-        float x;
-        float y;
-        float value = 0;
+        //float x;
+        //float y;
+        //float value;
         int direction = 4; //space holder
 
         int radius = chunkSize / 2;
@@ -53,26 +53,26 @@ public static class CraterStripesGenerator
                 }
 
                 //take the coordinates and make them in a range from -1 to 1
-                x = i / (float)chunkSize * 2 - 1;
-                y = j / (float)chunkSize * 2 - 1;
+                //x = i / (float)chunkSize * 2 - 1;
+                //y = j / (float)chunkSize * 2 - 1;
 
                 //get the value to use for map, find out which one, x or y, is closest to the edge of the square. which one is closer to 1
                 //float value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
 
-                if (direction == 0)
-                    value = -y;
+                //if (direction == 0)
+                //    value = -y;
 
-                if (direction == 1)
-                    value = -x;
+                //if (direction == 1)
+                //    value = -x;
 
-                if (direction == 2)
-                    value = y;
+                //if (direction == 2)
+                //    value = y;
 
-                if (direction == 3)
-                    value = x;
+                //if (direction == 3)
+                //    value = x;
 
-                if (direction == 4)
-                    value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
+                //if (direction == 4)
+                //    value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
 
                 //map[i, j] = Evaluate(value);
 

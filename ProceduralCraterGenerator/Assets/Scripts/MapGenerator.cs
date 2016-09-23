@@ -73,6 +73,8 @@ public class MapGenerator : MonoBehaviour
 
     public CraterType[] craters;
 
+    public bool defaultCrater;
+
     float[,] craterMap; //stores craterMap
     float[,] craterRing;
     float[,] craterFalloff;
@@ -271,13 +273,30 @@ public class MapGenerator : MonoBehaviour
 
         float ringWeightRND = craters[craterTypeNr].ringWeight;
         float ringWidthRND = craters[craterTypeNr].ringWidth;
+        //float falloffIntensityRND = craters[craterTypeNr].falloffIntensity;
+        float falloffWeightRND = craters[craterTypeNr].falloffWeight;
+        float falloffstartRND = craters[craterTypeNr].falloffstart;
+        float stripeIntensityRND = craters[craterTypeNr].stripeIntensity;
+        float stripeSinRND = craters[craterTypeNr].stripeSin;
+        float stripeQuantityRND = craters[craterTypeNr].stripeQuantity;
+        float sinWIntensityRND = craters[craterTypeNr].sinWIntensity;
+        float sinWQuantityRND = craters[craterTypeNr].sinWQuantity;
+        float lineStartRND = craters[craterTypeNr].lineStart;
         //Randomizes generated Crater in Play Mode
         System.Random craterRNG = new System.Random();
-        System.Random craterRNG2 = new System.Random();
         if (activateRandomizer)
         {
             ringWeightRND = (float)craterRNG.Next(0, 60) / 100;
-            ringWidthRND = (float)craterRNG2.Next(-8, 8) / 100;
+            ringWidthRND = (float)craterRNG.Next(-2, 8) / 100;
+            //falloffIntensityRND = (float) craterRNG.Next(0, 600)/100;
+            //falloffWeightRND = (float)craterRNG.Next(10, 600) / 100;
+            //falloffstartRND = (float)craterRNG.Next(0, 7) / 100;
+            stripeIntensityRND = (float)craterRNG.Next(0, 200) / 100;
+            stripeSinRND = (float) craterRNG.Next(0, 400)/100;
+            //stripeQuantityRND = (float)craterRNG.Next(100, 400) / 100;
+            //sinWIntensityRND = (float)craterRNG.Next(100, 300)/100;
+            sinWQuantityRND = (float) craterRNG.Next(0, 130)/1000;
+            //lineStartRND = (float)craterRNG.Next(30, 200) / 100;
         }
 
         //float[,] ringMask = CraterRingGenerator.GenerateCraterRing(mapChunkSize, craterSize + ringWidthRND,
@@ -285,17 +304,35 @@ public class MapGenerator : MonoBehaviour
 
         //float[,] ringMask = craterRing;
 
+        craterMap = CraterGenerator.GenerateCrater(mapChunkSize, craterSize, craterIntensity, position.x, position.y, ellipse.x, ellipse.y);
+
         craterRing = CraterRingGenerator.GenerateCraterRing(mapChunkSize, craterSize + ringWidthRND,
             craterIntensity + craterSize + ringWeightRND, position.x, position.y, ellipse.x, ellipse.y);
 
-        craterFalloff = CraterFalloffGenerator.GenerateCraterFalloff(mapChunkSize, craterSize + ringWidthRND + craters[craterTypeNr].falloffstart,
-    craterIntensity + craterSize + craters[craterTypeNr].falloffWeight, position.x, position.y, ellipse.x, ellipse.y);
+        craterFalloff = CraterFalloffGenerator.GenerateCraterFalloff(mapChunkSize, craterSize + ringWidthRND + falloffstartRND,
+            craterIntensity + craterSize + falloffWeightRND, position.x, position.y, ellipse.x, ellipse.y);
 
+        craterStripes = CraterStripesGenerator.GenerateCraterStripes(mapChunkSize, stripeSinRND,
+            stripeQuantityRND);
+
+        craterSinW = CraterSinW.GenerateCraterSinW(mapChunkSize, craters[craterTypeNr].sinWCentress, position.x, position.y, ellipse.x, ellipse.y,
+            sinWQuantityRND);
+
+        craterQuadFalloff = CraterQuadFalloffGenerator.GenerateCraterQuadFalloff(mapChunkSize, lineStartRND, 0);
+
+        craterCentralPeak = CraterCentralPeak.GenerateCreaterCentralPeak(mapChunkSize, craters[craterTypeNr].centralSize,
+            craters[craterTypeNr].centralPeakness, position.x + craters[craterTypeNr].centralPosition.x,
+            position.y + craters[craterTypeNr].centralPosition.y, ellipse.x,
+            ellipse.y);
+
+        craterTerrace = CraterTerrace.GenerateCraterTerrace(mapChunkSize, craters[craterTypeNr].terraceSize, craters[craterTypeNr].terracePeakness,
+            position.x + craters[craterTypeNr].terracePosition.x, position.y + craters[craterTypeNr].terracePosition.y, ellipse.x,
+            ellipse.y);
 
 
         //Random percentage to get a crater
         System.Random rnd = new System.Random(); 
-        int rndFall = rnd.Next(0, 100);
+        int rndFall = rnd.Next(1, 100);
 
         //all randomizer
         //if (activateRandomizer)
@@ -351,8 +388,8 @@ public class MapGenerator : MonoBehaviour
                 
                 //float ringMask = Mathf.Clamp01(craters[craterTypeNr].ringIntensity * craterRing[x, y]);
                 float falloffMask = Mathf.Clamp01(craters[craterTypeNr].falloffIntensity * craterFalloff[x, y]);
-                float stripeMask = Mathf.Clamp01(craters[craterTypeNr].stripeIntensity * craterStripes[x, y] - craterRing[x, y] * craters[craterTypeNr].stripeWidth);
-                float sinusMask = Mathf.Clamp01(craters[craterTypeNr].sinWIntensity * craterSinW[x, y] - craterRing[x, y] * craters[craterTypeNr].sinWWidth);
+                float stripeMask = Mathf.Clamp01(stripeIntensityRND * craterStripes[x, y] - craterRing[x, y] * craters[craterTypeNr].stripeWidth);
+                float sinusMask = Mathf.Clamp01(sinWIntensityRND * craterSinW[x, y] - craterRing[x, y] * craters[craterTypeNr].sinWWidth);
                 float lineMask = Mathf.Clamp01((craters[craterTypeNr].lineIntensity * (craterQuadFalloff[x, y] - craterFalloff[x, y] * 10)));
                 float centralMask =
                     Mathf.Clamp01(-(craterCentralPeak[x, y] - 1) - (craterMap[x, y] - sinusMask) * craters[craterTypeNr].centralIntensity);
@@ -405,6 +442,36 @@ public class MapGenerator : MonoBehaviour
     void OnValidate()
     {
         craterTypeNr = RandomizerType();
+
+        //Generates a predefined Crater
+        if (defaultCrater)
+        {
+            craters[craterTypeNr].ringWeight = 6.91f;
+            craters[craterTypeNr].ringWidth = 0.04f;
+            craters[craterTypeNr].falloffstart = 0.07f;
+            craters[craterTypeNr].falloffWeight = 4.08f;
+            craters[craterTypeNr].falloffIntensity = 0.82f;
+            craters[craterTypeNr].stripeIntensity = 0.381f;
+            craters[craterTypeNr].stripeSin = 4.97f;
+            craters[craterTypeNr].stripeQuantity = 2.69f;
+            craters[craterTypeNr].stripeWidth = 0.35f;
+            craters[craterTypeNr].sinWIntensity = 3.11f;
+            craters[craterTypeNr].sinWCentress = 1.49f;
+            craters[craterTypeNr].sinWQuantity = 0.1f;
+            craters[craterTypeNr].sinWWidth = 0.87f;
+            craters[craterTypeNr].lineStart = 0.65f;
+            craters[craterTypeNr].lineIntensity = 0.15f;
+            craters[craterTypeNr].centralIntensity = 0.51f;
+            craters[craterTypeNr].centralNoise = 8.2f;
+            craters[craterTypeNr].centralHeight = 1.06f;
+            craters[craterTypeNr].centralSize = -0.12f;
+            craters[craterTypeNr].centralPeakness = -0.02f;
+            craters[craterTypeNr].terraceIntensity = 0.21f;
+            craters[craterTypeNr].terraceNoise = 0;
+            craters[craterTypeNr].terraceHeight = 0.27f;
+            craters[craterTypeNr].terraceSize = 0.18f;
+            craters[craterTypeNr].terracePeakness = 0.39f;
+}
 
         //wont allow to drop values below that number
         if (lacunarity < 1)
@@ -465,26 +532,16 @@ public class MapGenerator : MonoBehaviour
         }
         
         //Dont forget to change Draw Mapeditor, too
-        craterMap = CraterGenerator.GenerateCrater(mapChunkSize, craterSize, craterIntensity, position.x, position.y, ellipse.x, ellipse.y);
+        
 
         //craterRing = CraterRingGenerator.GenerateCraterRing(mapChunkSize, craterSize + craters[craterTypeNr].ringWidth,
         //    craterIntensity + craterSize + craters[craterTypeNr].ringWeight, position.x, position.y, ellipse.x, ellipse.y);
 
 
 
-        craterStripes = CraterStripesGenerator.GenerateCraterStripes(mapChunkSize, craters[craterTypeNr].stripeSin, craters[craterTypeNr].stripeQuantity);
-
-        craterSinW = CraterSinW.GenerateCraterSinW(mapChunkSize, craters[craterTypeNr].sinWCentress, position.x, position.y, ellipse.x, ellipse.y, craters[craterTypeNr].sinWQuantity);
-
-        craterQuadFalloff = CraterQuadFalloffGenerator.GenerateCraterQuadFalloff(mapChunkSize, craters[craterTypeNr].lineStart, 0);
-
         //craterSidedParable = CraterSidedParable.GenerateCraterSidedParable(mapChunkSize, craters[craterTypeNr].diagScale, craters[craterTypeNr].diagParable, craters[craterTypeNr].diagDirection);
 
-        craterCentralPeak = CraterCentralPeak.GenerateCreaterCentralPeak(mapChunkSize, craters[craterTypeNr].centralSize, craters[craterTypeNr].centralPeakness, position.x + craters[craterTypeNr].centralPosition.x, position.y + craters[craterTypeNr].centralPosition.y, ellipse.x,
-            ellipse.y);
 
-        craterTerrace = CraterTerrace.GenerateCraterTerrace(mapChunkSize, craters[craterTypeNr].terraceSize, craters[craterTypeNr].terracePeakness, position.x + craters[craterTypeNr].terracePosition.x, position.y + craters[craterTypeNr].terracePosition.y, ellipse.x,
-            ellipse.y);
 
         craterPseudoRnd = CraterPseudoRndGenerator.GenerateCraterPseudoRnd(mapChunkSize, pseudoDensity, pseudoPeaks, pseudoVal);
     }

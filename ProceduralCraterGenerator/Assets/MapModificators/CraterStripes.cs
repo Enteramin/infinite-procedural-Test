@@ -80,6 +80,7 @@ public static class CraterStripesGenerator
                 //multiplicating with Sin g2 so values between 0.0 to 1.0 to 0.0 gets drawn too and edges are softer
                 if (Mathf.Sin(g2) > 0)
                     map[i, j] = Mathf.Clamp01(Mathf.Sqrt(f2) * (intensity / 100f) * Mathf.Sin(g2));
+
             }
         }
 

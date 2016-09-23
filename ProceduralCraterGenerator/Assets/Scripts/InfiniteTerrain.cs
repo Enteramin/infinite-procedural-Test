@@ -7,7 +7,7 @@ public class InfiniteTerrain : MonoBehaviour
 
     static MapGenerator mapGenerator;
     int chunkSize;
-    int chunksVisibleDst;  //chunk MeshDetails
+    int chunksVisibleDst;  //chunk LOD
 
     const float moveThresholdForChunkUpdate = 25f;
     const float sqrMoveThresholdForChunkUpdate = moveThresholdForChunkUpdate * moveThresholdForChunkUpdate; //sqr is always faster than getting the actual distance, because it doesnt need to make sqrt
@@ -30,7 +30,7 @@ public class InfiniteTerrain : MonoBehaviour
 
         maxViewDist = levelOfDetailsInfo[levelOfDetailsInfo.Length - 1].dstThreshold; //last element of detaillevel
         chunkSize = MapGenerator.mapChunkSize - 1;
-        //Brush Size cannot be changed, because MeshDetails needs more chunks to work!
+        //Brush Size cannot be changed, because LOD needs more chunks to work!
         chunksVisibleDst = Mathf.RoundToInt(maxViewDist / chunkSize); //How many chunks are visible
         
         UpdateVisibleChunks(); //first ones do get one, befor update method looks for changes in viewing distance

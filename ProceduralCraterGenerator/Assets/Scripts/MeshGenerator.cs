@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions.Comparers;
 
 public static class MeshGenerator
 {
@@ -51,6 +52,10 @@ public static class MeshGenerator
             {
                 int vertexIndex = verticesIndicesMap[x, y];
                 Vector2 percent = new Vector2((x - meshSimplifierIncrement) / (float)meshSize, (y - meshSimplifierIncrement) / (float)meshSize);
+
+                if (float.IsNaN(heightMap[x, y]))
+                    heightMap[x, y] = 0;
+
                 float height = heightCurve.Evaluate(heightMap[x, y]) * heightMultiplier;
                 Vector3 vertexPosition = new Vector3(topLeftX + percent.x * meshSizeUnsimpled, height, topLeftZ - percent.y * meshSizeUnsimpled); //x in the middle has 0, left has -1 and right 1. 
 
@@ -72,6 +77,8 @@ public static class MeshGenerator
             }
         }
 
+        meshData.ThreadNormals();
+
         return meshData; //meshdata instead of Mesh so threating can implemented
 
     }
@@ -83,6 +90,7 @@ public class MeshData
     Vector3[] vertices;
     int[] triangles;
     Vector2[] uvs;  //add textures to the mesh
+    Vector3[] threadNormals; //calculates normals in seperate thread instead of mainGamethread
 
     Vector3[] borderVertices;
     int[] borderTriangles;
@@ -207,6 +215,11 @@ public class MeshData
         return Vector3.Cross(sideAB, sideAC).normalized;
     }
 
+    public void ThreadNormals()
+    {
+        threadNormals = CalculateNormals();
+    }
+
     //Getting the Mesh from the MeshData
     public Mesh CreateMesh()
     {
@@ -214,7 +227,7 @@ public class MeshData
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.uv = uvs;
-        mesh.normals = CalculateNormals(); //anti seam 
+        mesh.normals = threadNormals; //anti seam 
         return mesh;
     }
 

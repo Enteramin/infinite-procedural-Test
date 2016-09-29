@@ -137,7 +137,7 @@ public class EndlessTerrain : MonoBehaviour
             mapDataReceived = true;
 
             //Gets the texture working on updateChunks
-            Texture2D texture = TextureGenerator.TextureFromColourMap(mapData.colourMap, MapGenerator.mapChunkSize, MapGenerator.mapChunkSize);
+            Texture2D texture = TextureGenerator.ColourMapTexture(mapData.colourMap, MapGenerator.mapChunkSize, MapGenerator.mapChunkSize);
             meshRenderer.material.mainTexture = texture;
 
             UpdateTerrainChunk();

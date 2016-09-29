@@ -175,7 +175,7 @@ public class MapGenerator : MonoBehaviour
         }
         else if (drawMode == DrawMode.CraterQuadFalloff)
         {
-            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterQuadFalloffGenerator.GenerateCraterQuadFalloff(mapChunkSize, craters[craterTypeNr].lineStart, 0)));
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(CraterQuadFalloffGenerator.GenerateCraterQuadFalloff(mapChunkSize, position.x, position.y, craters[craterTypeNr].lineStart, 0)));
         }
         //else if (drawMode == DrawMode.CraterSidedParable)
         //{
@@ -270,6 +270,7 @@ public class MapGenerator : MonoBehaviour
         //fetching 2D NoiseMap from the NoiseGenerator Class
         // +2 for the border vertices. generates 1 extra noise value on left and right side
         float[,] noiseMask = NoiseGenerator.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale, octaves, persistance, lacunarity, centre + offset, normalizeMode);
+        float[,] noiseMaskMOD = NoiseGenerator.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale+10, octaves+2, persistance+0.3f, lacunarity+5, centre + offset, normalizeMode);
 
         float ringWeightRND = craters[craterTypeNr].ringWeight;
         float ringWidthRND = craters[craterTypeNr].ringWidth;
@@ -281,23 +282,45 @@ public class MapGenerator : MonoBehaviour
         float stripeQuantityRND = craters[craterTypeNr].stripeQuantity;
         float sinWIntensityRND = craters[craterTypeNr].sinWIntensity;
         float sinWQuantityRND = craters[craterTypeNr].sinWQuantity;
+        float sinwCentressRND = craters[craterTypeNr].sinWCentress;
         float lineStartRND = craters[craterTypeNr].lineStart;
+        
+        float complexHeight = 0.6f;
+        float complexNoiseMod = 0.01f;
+        float complexcentral = 0.1f;
+        float complexProbability = 0f;
+
+        bool complexTrue = false;
         //Randomizes generated Crater in Play Mode
         System.Random craterRNG = new System.Random();
         if (activateRandomizer)
         {
-            ringWeightRND = (float)craterRNG.Next(0, 60) / 100;
+            ringWeightRND = (float)craterRNG.Next(0, 40) / 100;
             ringWidthRND = (float)craterRNG.Next(-2, 8) / 100;
             //falloffIntensityRND = (float) craterRNG.Next(0, 600)/100;
             //falloffWeightRND = (float)craterRNG.Next(10, 600) / 100;
             //falloffstartRND = (float)craterRNG.Next(0, 7) / 100;
             stripeIntensityRND = (float)craterRNG.Next(0, 200) / 100;
-            stripeSinRND = (float) craterRNG.Next(0, 400)/100;
+            stripeSinRND = (float) craterRNG.Next(0, 200)/100;
             //stripeQuantityRND = (float)craterRNG.Next(100, 400) / 100;
             //sinWIntensityRND = (float)craterRNG.Next(100, 300)/100;
             sinWQuantityRND = (float) craterRNG.Next(0, 130)/1000;
             //lineStartRND = (float)craterRNG.Next(30, 200) / 100;
+            sinwCentressRND = (float) craterRNG.Next(0, 200)/100;
+
+            complexHeight = (float) craterRNG.Next(57, 80)/100;
+            complexNoiseMod = (float) craterRNG.Next(0, 10)/1000;
+            complexcentral = (float) craterRNG.Next(0, 10)/100;
+
+            //probabiltiy complex craters
+            complexProbability = (float)craterRNG.Next(0, 10);
+            if (complexProbability < 2)
+                complexTrue = true;
         }
+
+        
+
+
 
         //float[,] ringMask = CraterRingGenerator.GenerateCraterRing(mapChunkSize, craterSize + ringWidthRND,
         //    craterIntensity + craterSize + ringWeightRND, position.x, position.y, ellipse.x, ellipse.y);
@@ -315,10 +338,10 @@ public class MapGenerator : MonoBehaviour
         craterStripes = CraterStripesGenerator.GenerateCraterStripes(mapChunkSize, stripeSinRND,
             stripeQuantityRND);
 
-        craterSinW = CraterSinW.GenerateCraterSinW(mapChunkSize, craters[craterTypeNr].sinWCentress, position.x, position.y, ellipse.x, ellipse.y,
+        craterSinW = CraterSinW.GenerateCraterSinW(mapChunkSize, sinwCentressRND, position.x, position.y, ellipse.x, ellipse.y,
             sinWQuantityRND);
 
-        craterQuadFalloff = CraterQuadFalloffGenerator.GenerateCraterQuadFalloff(mapChunkSize, lineStartRND, 0);
+        craterQuadFalloff = CraterQuadFalloffGenerator.GenerateCraterQuadFalloff(mapChunkSize, position.x, position.y, lineStartRND, 0);
 
         craterCentralPeak = CraterCentralPeak.GenerateCreaterCentralPeak(mapChunkSize, craters[craterTypeNr].centralSize,
             craters[craterTypeNr].centralPeakness, position.x + craters[craterTypeNr].centralPosition.x,
@@ -415,8 +438,17 @@ public class MapGenerator : MonoBehaviour
                 //while looping through noiseMap. use falloff map
                 else if (craterProbability >= rndFall)
                 {
-
+                    
                     map[x, y] = (craterMap[x, y] - falloffMask - stripeMask + sinusMask + lineMask + centralMask - terraceMask - pseudoMask) + Mathf.Abs(noiseMask[x, y] / 100 * NoiseIntensity);
+
+                    //For Tests: adds additionally cratertype of complex and old craters
+                    if (activateRandomizer) {
+
+                        if (complexTrue) { 
+                        if (map[x, y] <= complexHeight)
+                        map[x, y] = complexHeight + noiseMaskMOD[x,y]* complexNoiseMod + (centralMask* complexcentral * noiseMaskMOD[x,y]*4) ;
+                        }
+                    }
                 }
                 float currentHeight = map[x, y];
                 for (int i = 0; i < rockLevels.Length; i++)

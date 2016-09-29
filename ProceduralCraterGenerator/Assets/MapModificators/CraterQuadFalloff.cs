@@ -4,7 +4,7 @@ using System.Collections;
 public class CraterQuadFalloffGenerator {
 
     //substracts from noise so landmass is fully sorrounded
-    public static float[,] GenerateCraterQuadFalloff(int chunkSize, float intensity, int direction)
+    public static float[,] GenerateCraterQuadFalloff(int chunkSize, float xPos, float yPos, float intensity, int direction)
     {
         //direction: 0 = top, 1 = right, 2 = bottom, 3 = left, 4 = all sides
         float[,] map = new float[chunkSize, chunkSize];
@@ -19,8 +19,8 @@ public class CraterQuadFalloffGenerator {
             for (int j = 0; j < chunkSize; j++)
             {
                 //take the coordinates and make them in a range from -1 to 1
-                x = (i / (float)chunkSize * 2) - 1;
-                y = (j / (float)chunkSize * 2) - 1;
+                x = ((i + xPos) / (float)chunkSize * 2) - 1;
+                y = ((j + yPos) / (float)chunkSize * 2) - 1;
 
                 //get the value to use for map, find out which one, x or y, is closest to the edge of the square. which one is closer to 1
                 //float value = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
